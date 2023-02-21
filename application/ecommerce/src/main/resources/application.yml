@@ -1,0 +1,28 @@
+server:
+  port: 9080
+  compression:
+    enabled: true
+  shutdown: graceful
+  servlet:
+    context-path: "/home"
+  tomcat:
+    additional-tld-skip-patterns: '*.jar'
+
+spring:
+  config:
+    import:
+      classpath:application-security.yml,classpath:application-mail.yml
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.web.servlet.error.ErrorMvcAutoConfiguration, org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+  rabbitmq:
+    listener:
+      simple:
+        retry:
+          enabled: true
+          max-attempts: 10
+          initial-interval: 5000
+  main:
+    allow-bean-definition-overriding: true
+
+cache:
+  enabled: true

@@ -1,0 +1,43 @@
+management:
+  user:
+    name: admin
+    password: 'admin'
+  health:
+    rabbit:
+      enabled: false
+spring:
+  liquibase:
+    enabled: false
+  jpa:
+    database: H2
+    database-platform: org.hibernate.dialect.H2Dialect
+  mail:
+    host: localhost
+    username: test
+    password: secret
+    port: 3025
+    debug: false
+    template:
+      order-confirmation: order-confirmation-attachment.fo.ftl
+      order-customer: order-confirmation.ftl.txt
+      pdf-path: pdf
+      email-path: email
+    default-encoding: UTF-8
+    properties:
+      mail:
+        smtp:
+          debug: false
+          auth: true
+          starttls:
+            enable: true
+    transport:
+      protocol: smtp
+    test-connection: false
+  main:
+    allow-bean-definition-overriding: true
+
+service:
+  rabbitmq:
+    enabled: false
+  mail:
+    enabled: true

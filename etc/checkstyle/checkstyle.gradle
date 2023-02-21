@@ -1,0 +1,14 @@
+apply plugin: 'checkstyle'
+
+checkstyle {
+	toolVersion "10.7.0"
+	configDirectory = rootProject.file("./etc/checkstyle")
+	ignoreFailures = false
+	maxWarnings = 0
+}
+
+tasks.withType(Checkstyle) {
+	reports {
+		html.required
+	}
+}

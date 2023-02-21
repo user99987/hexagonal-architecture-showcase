@@ -1,0 +1,30 @@
+management:
+  user:
+    name: admin
+    password: 'admin'
+spring:
+  liquibase:
+    enabled: false
+  mail:
+    default-encoding: UTF-8
+    host: localhost
+    jndi-name:
+    username: test@test.com
+    password: secret
+    port: 2525
+    debug: false
+    template:
+      order-confirmation: order-confirmation-attachment.fo.ftl
+      order-customer: order-confirmation.ftl.txt
+      pdf-path: pdf
+      email-path: email
+    properties:
+      mail:
+        smtp:
+          debug: false
+          auth: true
+          starttls:
+            enable: true
+    transport:
+      protocol: smtp
+    test-connection: false

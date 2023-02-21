@@ -1,0 +1,11 @@
+apply plugin: 'com.diffplug.spotless'
+
+spotless {
+	format 'xml', {
+        target fileTree('.') {
+            include '**/*.xml'
+            exclude '**/build/**'
+        }
+        eclipseWtp('xml').configFile(rootProject.file("./etc/spotless/xml.prefs"))
+	}
+}

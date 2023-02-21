@@ -1,0 +1,10 @@
+spring:
+  config:
+    import:
+      classpath:application.yml,classpath:application-persistence-h2-in-memory.yml,classpath:application-amqp-local.yml
+  liquibase:
+    contexts: local
+
+service:
+  mail:
+    enabled: false

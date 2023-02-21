@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+
+    <!-- constants -->
+    <property name="numeric_type" value="NUMERIC" dbms="postgresql" />
+    <property name="numeric_type" value="NUMBER" dbms="h2" />
+    <property name="string_type" value="VARCHAR" dbms="postgresql" />
+    <property name="string_type" value="VARCHAR2" dbms="h2" />
+    <property name="schema_name" value='"test_db".' dbms="postgresql" />
+    <property name="schema_name" value="" dbms="h2" />
+    <property name="schema_name_full" value='test_db' />
+    <property name="schema_name_prefix" value='"${schema_name_full}".' dbms="postgresql" />
+    <property name="schema_name_prefix" value="" dbms="h2" />
+
+    <!-- changelogs -->
+    <include file="changelogs/db.changelog-baseline.xml" relativeToChangelogFile="true" />
+
+</databaseChangeLog>

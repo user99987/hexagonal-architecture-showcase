@@ -1,0 +1,6 @@
+info:
+    application:
+        name: e-commerce
+spring:
+    application:
+        name: ${info.application.name}

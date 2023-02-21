@@ -1,0 +1,51 @@
+# This file specifies intentionally untracked
+# files that Git should ignore.
+
+# IDEA IDE
+*.ipr
+*.iml
+*.iws
+.idea/
+out/
+
+# Eclipse IDE
+.metadata/
+.settings/
+.classpath
+.project
+.settings
+.pmd
+.checkstyle
+.springBeans
+bin/
+Servers/
+RemoteSystemsTempFiles/
+.recommenders/
+infinitest.filters
+
+# Gradle
+.gradle/
+.gradletasknamecache
+build/
+target/
+lib/
+
+# temporary runtime artifacts
+work/
+logs/
+tmp/
+adapter/ecommerce-frontend/package-lock.json
+
+# generated content
+generated/
+
+# Emacs
+*#
+*~
+
+# Mac
+.DS_Store
+
+# Test DB files
+*.db
+postgres-data/

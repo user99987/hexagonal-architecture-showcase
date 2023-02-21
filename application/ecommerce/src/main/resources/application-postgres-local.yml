@@ -1,0 +1,17 @@
+spring:
+  config:
+    import:
+      classpath:application.yml,classpath:application-persistence-postgres-local.yml
+  liquibase:
+    contexts: local
+
+management:
+  health:
+    rabbit:
+      enabled: false
+
+service:
+  rabbitmq:
+    enabled: false
+  mail:
+    enabled: false

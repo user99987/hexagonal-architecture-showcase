@@ -1,0 +1,43 @@
+apply plugin: 'jacoco'
+
+jacoco {
+    toolVersion = '0.8.8'
+}
+
+jacocoTestCoverageVerification.mustRunAfter jacocoTestReport
+check.dependsOn jacocoTestReport
+check.dependsOn jacocoTestCoverageVerification
+build.dependsOn jacocoTestReport
+
+jacocoTestCoverageVerification {
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it,
+                exclude: ["**/test/**",
+                          "com/cp/ecommerce/application/EcommerceApplication**",
+                          "com/cp/ecommerce/adapter/security/configuration/ActuatorSecurityConfiguration**",
+                          "com/cp/ecommerce/adapter/security/configuration/WebMvcConfiguration**",
+                          "com/cp/ecommerce/adapter/persistence/configuration/PersistenceCacheConfiguration**",
+                          "com/cp/ecommerce/adapter/persistence/configuration/PersistenceConfiguration**",
+                          "com/cp/ecommerce/adapter/amqp/configuration/MessagingConfiguration**",
+                          "com/cp/ecommerce/adapter/amqp/order/MessageListener**",
+                          "com/cp/ecommerce/adapter/persistence/configuration/SequenceNumberConfiguration**"]
+            )
+        }))
+    }
+    violationRules {
+        rule {
+            limit {
+                minimum = 1.00
+            }
+        }
+    }
+}
+
+jacocoTestReport {
+    reports {
+        html.required
+        xml.required
+    }
+}
+

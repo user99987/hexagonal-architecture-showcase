@@ -1,0 +1,7 @@
+<pre>
+${message("mail.greetings")} ${contact.fullName},
+
+${message("mail.thanks")}
+
+${message("mail.footer")}
+</pre>

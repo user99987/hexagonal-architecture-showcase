@@ -1,0 +1,24 @@
+rootProject.name = 'showcase-application'
+
+addSubproject('adapter:ecommerce-backend')
+addSubproject('adapter:ecommerce-frontend')
+addSubproject('adapter:security')
+addSubproject('adapter:common')
+addSubproject('adapter:mail')
+addSubproject('adapter:persistence')
+addSubproject('adapter:web')
+addSubproject('adapter:amqp')
+addSubproject('application:ecommerce')
+addSubproject('domain')
+
+void addSubproject(String name) {
+	include name
+	project(":" + name).buildFileName = buildFileName(name) + ".gradle"
+}
+
+String buildFileName(String name) {
+	if (name.contains(':')) {
+		return name.substring(name.lastIndexOf(':') + 1, name.length())
+	}
+	return name
+}

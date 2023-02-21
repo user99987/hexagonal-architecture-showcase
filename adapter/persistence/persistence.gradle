@@ -1,0 +1,39 @@
+apply from: '../../etc/spotbugs.gradle'
+apply from: '../../etc/checkstyle/checkstyle.gradle'
+apply from: '../../etc/jacoco.gradle'
+apply from: '../../etc/spotless/spotless-java.gradle'
+apply from: '../../etc/spotless/spotless-xml.gradle'
+apply from: '../../etc/dependencycheck/dependencycheck.gradle'
+apply from: '../../etc/pmd/pmd.gradle'
+apply plugin: 'java'
+
+dependencies {
+    implementation project(':adapter:common')
+    implementation project(':domain')
+
+    annotationProcessor 'org.springframework.boot:spring-boot-configuration-processor'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    runtimeOnly 'com.h2database:h2'
+    runtimeOnly 'org.liquibase:liquibase-core'
+    runtimeOnly 'org.postgresql:postgresql'
+    implementation 'com.fasterxml.jackson.core:jackson-databind'
+    implementation 'com.sun.istack:istack-commons-runtime'
+    implementation 'jakarta.persistence:jakarta.persistence-api'
+    implementation 'jakarta.transaction:jakarta.transaction-api'
+    implementation 'javax.cache:cache-api'
+    implementation 'org.ehcache:ehcache'
+    implementation 'org.hibernate.validator:hibernate-validator'
+    implementation 'org.hibernate:hibernate-core'
+    implementation 'org.projectlombok:lombok'
+    implementation 'org.springframework.boot:spring-boot-autoconfigure'
+    implementation 'org.springframework.boot:spring-boot-starter-cache'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+    implementation 'org.springframework.data:spring-data-commons'
+    implementation 'org.springframework:spring-context'
+    testImplementation project(path: ":adapter:common", configuration: 'testArtifacts')
+    testImplementation 'org.springframework.security:spring-security-test'
+}
+
+configureTestDependencies(project)

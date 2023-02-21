@@ -1,0 +1,1 @@
+${AnsiColor.BLUE}E-commerce${AnsiColor.GREEN} :: Spring Boot ${spring-boot.version}

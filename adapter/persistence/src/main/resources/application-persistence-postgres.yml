@@ -1,0 +1,8 @@
+spring:
+    jpa:
+        database: postgresql
+        database-platform: org.hibernate.dialect.PostgreSQLDialect
+        properties:
+            hibernate.default_schema: test_db
+    datasource:
+        driver-class-name: org.postgresql.Driver
