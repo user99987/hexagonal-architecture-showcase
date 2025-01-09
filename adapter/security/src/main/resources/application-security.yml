@@ -4,9 +4,6 @@ management:
   user:
     name: admin
     password: 'admin'
-  trace:
-    http:
-      enabled: false
   endpoint:
     health:
       show-details: always
@@ -16,9 +13,14 @@ management:
     web:
       exposure:
         include: '*'
-  metrics:
-    export:
-      influx:
+  influx:
+    metrics:
+      export:
         enabled: false
-      prometheus:
+  prometheus:
+    metrics:
+      export:
         enabled: true
+  httpexchanges:
+    recording:
+      enabled: false

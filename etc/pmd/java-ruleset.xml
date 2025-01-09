@@ -249,9 +249,6 @@
     <rule ref="category/java/errorprone.xml/EmptyCatchBlock">
         <priority>2</priority>
     </rule>
-    <rule ref="category/java/errorprone.xml/EmptyStatementNotInLoop">
-        <priority>2</priority>
-    </rule>
     <rule ref="category/java/errorprone.xml/UnnecessaryConversionTemporary">
         <priority>3</priority>
     </rule>
@@ -333,10 +330,6 @@
     <rule ref="category/java/errorprone.xml/DoNotCallGarbageCollectionExplicitly">
         <priority>2</priority>
     </rule>
-    <rule ref="category/java/errorprone.xml">
-        <exclude name="BeanMembersShouldSerialize"/>
-    </rule>
-
     <rule ref="category/java/documentation.xml/UncommentedEmptyMethodBody">
         <priority>3</priority>
     </rule>

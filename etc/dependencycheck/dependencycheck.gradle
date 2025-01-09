@@ -12,7 +12,6 @@ dependencyCheck {
 
 	skipConfigurations.add('publishedJar')
 	skipConfigurations.add('checkstyle')
-	skipConfigurations.add('findbugs')
 
 	failBuildOnCVSS = 0
 }

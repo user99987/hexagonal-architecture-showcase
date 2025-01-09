@@ -74,15 +74,15 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "ecommerce-frontend:build",
+            "buildTarget": "ecommerce-frontend:build",
             "proxyConfig": "src/proxy.conf.js"
           },
           "configurations": {
             "production": {
-              "browserTarget": "ecommerce-frontend:build:production"
+              "buildTarget": "ecommerce-frontend:build:production"
             },
             "development": {
-              "browserTarget": "ecommerce-frontend:build:development"
+              "buildTarget": "ecommerce-frontend:build:development"
             }
           },
           "defaultConfiguration": "development"
@@ -90,7 +90,7 @@
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "ecommerce-frontend:build"
+            "buildTarget": "ecommerce-frontend:build"
           }
         },
         "test": {

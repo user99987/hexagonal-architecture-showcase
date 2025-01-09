@@ -55,7 +55,7 @@ class ActuatorSecurityConfigurationTest {
     private transient int localManagementPort;
 
     @ParameterizedTest
-    @ValueSource(strings = { "/actuator/info", "/actuator/health", "/health" })
+    @ValueSource(strings = { "/actuator/info", "/actuator/health", "/actuator/metrics" })
     void shouldHaveUnsecuredEndpoint(final String endpoint) {
 
         final TestRestTemplate testRestTemplate = new TestRestTemplate(createRootUri());

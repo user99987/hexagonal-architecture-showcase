@@ -1,7 +1,7 @@
 apply plugin: 'checkstyle'
 
 checkstyle {
-	toolVersion "10.7.0"
+	toolVersion "10.21.1"
 	configDirectory = rootProject.file("./etc/checkstyle")
 	ignoreFailures = false
 	maxWarnings = 0

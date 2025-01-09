@@ -47,7 +47,7 @@ public class OrderController {
     }
 
     @GetMapping("/{orderNumber}")
-    public Order findOrder(@PathVariable final String orderNumber) {
+    public Order findOrder(@PathVariable("orderNumber") final String orderNumber) {
 
         final Order order = manageOrderUseCase.findOrder(orderNumber);
         if (Optional.ofNullable(order).isEmpty()) {

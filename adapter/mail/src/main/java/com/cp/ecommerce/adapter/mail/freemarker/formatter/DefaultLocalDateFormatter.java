@@ -9,7 +9,6 @@ import lombok.experimental.UtilityClass;
 /**
  * Utility class used for formatting dates for specific locale.
  */
-@SuppressWarnings("PMD.BeanMembersShouldSerialize")
 @UtilityClass
 public class DefaultLocalDateFormatter {
 

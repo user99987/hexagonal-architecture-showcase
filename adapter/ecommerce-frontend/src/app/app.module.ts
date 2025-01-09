@@ -22,6 +22,6 @@ import { OrderModule } from '@app/order/order.module';
     },
   ],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
-  bootstrap: [AppComponent],
+  bootstrap: [],
 })
 export class AppModule {}

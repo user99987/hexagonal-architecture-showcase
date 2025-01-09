@@ -1,5 +1,5 @@
 plugins {
-  id 'com.github.node-gradle.node' version '3.5.1'
+  id 'com.github.node-gradle.node' version '7.1.0'
 }
 
 apply plugin: 'com.github.node-gradle.node'
@@ -7,8 +7,8 @@ apply from: '../../etc/spotless/spotless-prettier.gradle'
 
 node {
   download = true
-  version = "18.14.1"
-  npmVersion = "9.5.0"
+  version = "22.12.0"
+  npmVersion = "11.0.0"
   yarnVersion = ""
 }
 
