@@ -1,4 +1,4 @@
-# Showcase application
+# Hexagonal architecture showcase
 
 Project created to showcase use of wide range of tools, libraries, plugins and <ins>**_hexagonal architecture pattern_**<ins>.
 
