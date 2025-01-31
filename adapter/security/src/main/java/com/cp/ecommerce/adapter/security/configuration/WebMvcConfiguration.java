@@ -19,7 +19,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
     public void addResourceHandlers(final ResourceHandlerRegistry registry) {
 
         registry.addResourceHandler("/**")
-                .addResourceLocations("classpath:/static/")
+                .addResourceLocations("classpath:/static/browser/")
                 .resourceChain(true)
                 .addResolver(new PathResourceResolver() {
 
@@ -30,7 +30,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 
                         return requestedResource.exists() && requestedResource.isReadable()
                                 ? requestedResource
-                                : new ClassPathResource("/static/index.html");
+                                : new ClassPathResource("/static/browser/index.html");
                     }
                 });
     }

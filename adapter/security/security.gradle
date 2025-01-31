@@ -12,7 +12,6 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 
     implementation 'com.fasterxml.jackson.core:jackson-databind'
-    implementation 'com.google.code.findbugs:annotations'
     implementation 'io.micrometer:micrometer-registry-prometheus'
     implementation 'org.apache.commons:commons-lang3'
     implementation 'org.apache.tomcat.embed:tomcat-embed-core'

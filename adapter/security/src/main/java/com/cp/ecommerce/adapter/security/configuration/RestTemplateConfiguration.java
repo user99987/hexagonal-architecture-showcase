@@ -20,8 +20,8 @@ class RestTemplateConfiguration {
     @Bean
     public RestTemplate restTemplate(final OutgoingHttpRequestInterceptor outgoingHttpRequestInterceptor) {
 
-        return new RestTemplateBuilder().setConnectTimeout(TIMEOUT)
-                .setReadTimeout(TIMEOUT)
+        return new RestTemplateBuilder().connectTimeout(TIMEOUT)
+                .readTimeout(TIMEOUT)
                 .interceptors(outgoingHttpRequestInterceptor)
                 .build();
     }

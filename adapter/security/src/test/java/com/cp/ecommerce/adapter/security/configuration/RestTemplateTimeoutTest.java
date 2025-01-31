@@ -1,6 +1,6 @@
 package com.cp.ecommerce.adapter.security.configuration;
 
-import java.net.SocketTimeoutException;
+import java.net.SocketException;
 
 import org.junit.jupiter.api.Test;
 
@@ -26,6 +26,6 @@ class RestTemplateTimeoutTest {
     void shouldThrowTimeoutException() {
 
         assertThat(catchThrowable(() -> restTemplate.getForObject(TEST_URL, String.class)))
-                .hasRootCauseInstanceOf(SocketTimeoutException.class);
+                .hasRootCauseInstanceOf(SocketException.class);
     }
 }

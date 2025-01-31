@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="ECOMMERCE-h2" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
-    <module name="com.cp.showcase-application.application.ecommerce.main" />
+    <module name="ecommerce.showcase-application.application.ecommerce.main" />
     <option name="SPRING_BOOT_MAIN_CLASS" value="com.cp.ecommerce.application.EcommerceApplication" />
     <option name="VM_PARAMETERS" value="-Dspring.profiles.active=local" />
     <extension name="net.ashald.envfile">

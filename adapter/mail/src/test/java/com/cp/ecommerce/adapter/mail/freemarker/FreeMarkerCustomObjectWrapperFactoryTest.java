@@ -43,7 +43,7 @@ class FreeMarkerCustomObjectWrapperFactoryTest {
         when(
                 customObjectWrapperFactory
                         .createWrapperBasedOnModelType(ArgumentMatchers.anyString(), any(FreeMarkerCustomObjectWrapper.class)))
-                                .thenReturn(objectWrapper);
+                .thenReturn(objectWrapper);
         assertThat(createObjectWrapper()).isEqualTo(objectWrapper);
     }
 
