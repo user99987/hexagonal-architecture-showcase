@@ -1,7 +1,7 @@
 apply plugin: 'org.owasp.dependencycheck'
 
 dependencyCheck {
-	outputDirectory = "${buildDir}/reports/security"
+	outputDirectory = "${getLayout().getBuildDirectory()}/reports/security"
 	suppressionFiles = [
 		"etc/dependencycheck/suppressions.xml"
 	]

@@ -37,19 +37,20 @@ dir):
    formatting. Executing the following command on the root of the project `./gradlew spotlessApply` will start it. During *gradle
    build* step formatting will be checked.
 2. [JaCoCo](https://www.eclemma.org/jacoco/) – code coverage library for Java. The default limit is set to 100%.
-3. [PMD](https://pmd.github.io/) – PMD is a source code analyzer.
+3. [SpotBugs](https://spotbugs.github.io/) – program which uses static analysis to look for bugs in Java code.
+4. [PMD](https://pmd.github.io/) – PMD is a source code analyzer.
    It finds common programming flaws like unused variables, empty catch blocks, unnecessary object creation, etc. It
    supports Java, JavaScript, Salesforce.com, PLSQL, Apache Velocity, XML, XSL, etc.
-4. [DependencyCheck](https://jeremylong.github.io/DependencyCheck/dependency-check-gradle/index.html) – a
+5. [DependencyCheck](https://jeremylong.github.io/DependencyCheck/dependency-check-gradle/index.html) – a
    software composition analysis plugin that identifies known vulnerable dependencies used by the project.
-5. [GitProperties](https://github.com/n0mer/gradle-git-properties) – plugin that produces git.properties for
+6. [GitProperties](https://github.com/n0mer/gradle-git-properties) – plugin that produces git.properties for
    spring-boot-actuator.
-6. [Checkstyle](https://docs.gradle.org/current/userguide/checkstyle_plugin.html) – performs quality checks
+7. [Checkstyle](https://docs.gradle.org/current/userguide/checkstyle_plugin.html) – performs quality checks
    on Java source files using [Checkstyle](https://checkstyle.org/index.html) tool and generates reports from these
    checks.
-7. [Gradle node](https://github.com/node-gradle/gradle-node-plugin) – plugin that is used for building the
+8. [Gradle node](https://github.com/node-gradle/gradle-node-plugin) – plugin that is used for building the
    client app.
-8. [Gradle Versions Plugin](https://github.com/ben-manes/gradle-versions-plugin) – this plugin provides a
+9. [Gradle Versions Plugin](https://github.com/ben-manes/gradle-versions-plugin) – this plugin provides a
     task to determine which dependencies have updates. Additionally, the plugin checks for updates to Gradle itself.
 
 ## Starting the application
