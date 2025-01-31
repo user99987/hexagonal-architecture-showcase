@@ -1,12 +1,16 @@
 import { TestBed } from '@angular/core/testing';
 
 import {
-  HttpClientTestingModule,
   HttpTestingController,
+  provideHttpClientTesting,
 } from '@angular/common/http/testing';
 import { OrderService } from '@app/order/order.service';
 import { OrderResponseModel } from '@app/order/order-response.model';
 import { environment } from '@environments/environment';
+import {
+  provideHttpClient,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 
 describe('OrderService', () => {
   let orderService: OrderService;
@@ -14,8 +18,12 @@ describe('OrderService', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      imports: [HttpClientTestingModule],
-      providers: [OrderService],
+      imports: [],
+      providers: [
+        OrderService,
+        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClientTesting(),
+      ],
     }).compileComponents();
     orderService = TestBed.inject(OrderService);
     httpTestingController = TestBed.inject(HttpTestingController);
