@@ -1,6 +1,6 @@
 package com.cp.ecommerce.adapter.security.configuration;
 
-import java.net.SocketException;
+import java.net.http.HttpTimeoutException;
 
 import org.junit.jupiter.api.Test;
 
@@ -25,7 +25,12 @@ class RestTemplateTimeoutTest {
     @Test
     void shouldThrowTimeoutException() {
 
+        // Spring Boot 4's RestTemplateBuilder defaults to the JDK HttpClient, which reports
+        // connect timeouts as HttpTimeoutException rather than SocketException. Depending on the
+        // network stack, the JDK HttpClient may additionally wrap a further root cause (e.g.
+        // ConnectException) below the HttpTimeoutException, so assert on the immediate cause
+        // rather than the ultimate root cause.
         assertThat(catchThrowable(() -> restTemplate.getForObject(TEST_URL, String.class)))
-                .hasRootCauseInstanceOf(SocketException.class);
+                .hasCauseInstanceOf(HttpTimeoutException.class);
     }
 }

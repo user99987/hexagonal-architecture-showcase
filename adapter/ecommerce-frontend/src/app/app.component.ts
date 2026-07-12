@@ -1,8 +1,11 @@
-import { Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
+
+import { OrderComponent } from './order/order.component';
 
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
-  standalone: false,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [OrderComponent],
 })
 export class AppComponent {}

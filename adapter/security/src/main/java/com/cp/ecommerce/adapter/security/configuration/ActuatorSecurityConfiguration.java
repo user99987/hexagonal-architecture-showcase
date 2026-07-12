@@ -2,11 +2,11 @@ package com.cp.ecommerce.adapter.security.configuration;
 
 import com.cp.ecommerce.adapter.security.utils.ManagementUserProperties;
 
-import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
-import org.springframework.boot.actuate.health.HealthEndpoint;
 import org.springframework.boot.actuate.info.InfoEndpoint;
-import org.springframework.boot.actuate.metrics.MetricsEndpoint;
-import org.springframework.boot.actuate.metrics.export.prometheus.PrometheusScrapeEndpoint;
+import org.springframework.boot.health.actuate.endpoint.HealthEndpoint;
+import org.springframework.boot.micrometer.metrics.actuate.endpoint.MetricsEndpoint;
+import org.springframework.boot.micrometer.metrics.autoconfigure.export.prometheus.PrometheusScrapeEndpoint;
+import org.springframework.boot.security.autoconfigure.actuate.web.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -18,6 +18,8 @@ import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.RequiredArgsConstructor;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 /**
  * Configuration class representing actuator's endpoints configuration.
@@ -36,20 +38,21 @@ public class ActuatorSecurityConfiguration {
     private final ManagementUserProperties properties;
 
     @Bean
-    public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
+    public SecurityFilterChain actuatorSecurityFilterChain(final HttpSecurity http) throws Exception {
 
-        http.authorizeHttpRequests()
-                .requestMatchers(
-                        EndpointRequest.to(
-                                HealthEndpoint.class,
-                                InfoEndpoint.class,
-                                MetricsEndpoint.class,
-                                PrometheusScrapeEndpoint.class))
-                .permitAll()
-                .requestMatchers(EndpointRequest.toAnyEndpoint())
-                .hasRole(ACTUATOR)
-                .and()
-                .httpBasic();
+        http.securityMatcher(EndpointRequest.toAnyEndpoint())
+                .authorizeHttpRequests(
+                        authorize -> authorize
+                                .requestMatchers(
+                                        EndpointRequest.to(
+                                                HealthEndpoint.class,
+                                                InfoEndpoint.class,
+                                                MetricsEndpoint.class,
+                                                PrometheusScrapeEndpoint.class))
+                                .permitAll()
+                                .requestMatchers(EndpointRequest.toAnyEndpoint())
+                                .hasRole(ACTUATOR))
+                .httpBasic(withDefaults());
 
         return http.build();
     }

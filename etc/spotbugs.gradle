@@ -1,26 +1,22 @@
 apply plugin: 'com.github.spotbugs'
 
 spotbugs {
-	toolVersion = '4.7.3'
+	toolVersion = '4.10.2'
 	effort = 'default'
 	reportLevel = 'high'
 }
 
-tasks.findAll {it.name.contains("spotbugs")}.each {
-	it.release = 'FIXED_RELEASE_WORKAROUND'
-}
-
-tasks.matching {task -> task.name.startsWith('spotbugs')}.forEach {
-	it.reports {
+tasks.matching {task -> task.name.startsWith('spotbugs')}.configureEach {
+	reports {
 		html {
-			enabled = true
+			required = true
 		}
 		xml {
-			enabled = false
+			required = false
 		}
 	}
 }
 
 dependencies {
-	spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.12.0'
+	spotbugsPlugins 'com.h3xstream.findsecbugs:findsecbugs-plugin:1.14.0'
 }

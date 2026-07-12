@@ -10,6 +10,7 @@ import { environment } from '@environments/environment';
 import {
   provideHttpClient,
   withInterceptorsFromDi,
+  withXhr
 } from '@angular/common/http';
 
 describe('OrderService', () => {
@@ -21,7 +22,7 @@ describe('OrderService', () => {
       imports: [],
       providers: [
         OrderService,
-        provideHttpClient(withInterceptorsFromDi()),
+        provideHttpClient(withXhr(), withInterceptorsFromDi()),
         provideHttpClientTesting(),
       ],
     }).compileComponents();

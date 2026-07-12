@@ -4,7 +4,7 @@ import java.time.Duration;
 
 import com.cp.ecommerce.adapter.security.utils.OutgoingHttpRequestInterceptor;
 
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;

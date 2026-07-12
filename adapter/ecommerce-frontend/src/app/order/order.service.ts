@@ -1,19 +1,20 @@
-import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { environment } from '@environments/environment';
-import { OrderResponseModel } from '@app/order/order-response.model';
-import { OrderRequestModel } from '@app/order/order-request.model';
+import { Injectable, inject } from '@angular/core';
+import { Observable } from 'rxjs';
 
-@Injectable()
+import { environment } from '@environments/environment';
+import { OrderRequestModel } from '@app/order/order-request.model';
+import { OrderResponseModel } from '@app/order/order-response.model';
+
+@Injectable({ providedIn: 'root' })
 export class OrderService {
+  private readonly httpClient = inject(HttpClient);
+
   private readonly httpOptions = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json',
     }),
   };
-
-  constructor(private readonly httpClient: HttpClient) {}
 
   private static buildOrderRequest(): OrderRequestModel {
     return {
@@ -26,7 +27,7 @@ export class OrderService {
     return this.httpClient.post<OrderResponseModel>(
       `${environment.apiPrefix}/order`,
       OrderService.buildOrderRequest(),
-      this.httpOptions
+      this.httpOptions,
     );
   }
 }

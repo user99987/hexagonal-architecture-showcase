@@ -6,10 +6,13 @@ import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.RequiredArgsConstructor;
+
+import static org.springframework.security.config.Customizer.withDefaults;
 
 /**
  * Initial configuration class serving web security.
@@ -35,21 +38,16 @@ public class WebSecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(final HttpSecurity http) throws Exception {
+    public SecurityFilterChain webSecurityFilterChain(final HttpSecurity http) throws Exception {
 
-        http.authorizeRequests()
-                .requestMatchers(CONTEXT_PATH_MATCHER)
-                .permitAll()
-                .requestMatchers(API_PATH_MATCHER)
-                .permitAll()
-                .and()
-                .exceptionHandling()
-                .and()
-                .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                .and()
-                .csrf()
-                .disable();
+        http.authorizeHttpRequests(
+                authorize -> authorize.requestMatchers(CONTEXT_PATH_MATCHER)
+                        .permitAll()
+                        .requestMatchers(API_PATH_MATCHER)
+                        .permitAll())
+                .exceptionHandling(withDefaults())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .csrf(AbstractHttpConfigurer::disable);
 
         return http.build();
     }

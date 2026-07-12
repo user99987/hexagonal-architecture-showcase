@@ -10,7 +10,7 @@ On the backend side, there is a Spring Boot application being used, on the front
 
 Among many frameworks, libraries and tools, the most important being used are as follows:
 
-- Java 17
+- Java
 - Angular
 - Spring Boot
 - Gradle

@@ -44,7 +44,7 @@
     <rule ref="category/java/bestpractices.xml/CheckResultSet">
         <priority>3</priority>
     </rule>
-    <rule ref="category/java/bestpractices.xml/SwitchStmtsShouldHaveDefault">
+    <rule ref="category/java/bestpractices.xml/NonExhaustiveSwitch">
         <priority>3</priority>
     </rule>
     <rule ref="category/java/bestpractices.xml/AvoidReassigningParameters">
@@ -53,7 +53,7 @@
     <rule ref="category/java/bestpractices.xml/AccessorClassGeneration">
         <priority>3</priority>
     </rule>
-    <rule ref="category/java/bestpractices.xml/DefaultLabelNotLastInSwitchStmt">
+    <rule ref="category/java/bestpractices.xml/DefaultLabelNotLastInSwitch">
         <priority>3</priority>
     </rule>
     <rule ref="category/java/bestpractices.xml/UseVarargs">
@@ -161,7 +161,7 @@
     <rule ref="category/java/performance.xml/UselessStringValueOf">
         <priority>3</priority>
     </rule>
-    <rule ref="category/java/performance.xml/TooFewBranchesForASwitchStatement">
+    <rule ref="category/java/performance.xml/TooFewBranchesForSwitch">
         <priority>1</priority>
     </rule>
     <rule ref="category/java/performance.xml/OptimizableToArrayCall">
@@ -282,7 +282,7 @@
     <rule ref="category/java/errorprone.xml/NonStaticInitializer">
         <priority>3</priority>
     </rule>
-    <rule ref="category/java/errorprone.xml/NonCaseLabelInSwitchStatement">
+    <rule ref="category/java/errorprone.xml/NonCaseLabelInSwitch">
         <priority>1</priority>
     </rule>
     <rule ref="category/java/errorprone.xml/ComparisonWithNaN">

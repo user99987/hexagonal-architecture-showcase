@@ -1,13 +1,17 @@
-import { enableProdMode } from '@angular/core';
-import { platformBrowserDynamic } from '@angular/platform-browser-dynamic';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { enableProdMode, provideZoneChangeDetection } from '@angular/core';
+import { mergeApplicationConfig, ApplicationConfig } from '@angular/core';
 
 import { environment } from '@environments/environment';
-import { AppModule } from '@app/app.module';
+import { AppComponent } from '@app/app.component';
+import { appConfig } from '@app/app.config';
 
 if (environment.production) {
   enableProdMode();
 }
 
-platformBrowserDynamic()
-  .bootstrapModule(AppModule)
-  .catch((err) => console.error(err));
+const zoneConfig: ApplicationConfig = {
+  providers: [provideZoneChangeDetection()],
+};
+
+bootstrapApplication(AppComponent, mergeApplicationConfig(appConfig, zoneConfig)).catch((err) => console.error(err));
