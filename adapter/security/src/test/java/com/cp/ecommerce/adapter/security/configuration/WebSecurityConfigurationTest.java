@@ -1,0 +1,86 @@
+package com.cp.ecommerce.adapter.security.configuration;
+
+import com.cp.ecommerce.adapter.SecurityTestConfiguration;
+
+import org.junit.jupiter.api.Test;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
+import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
+import org.springframework.test.web.servlet.MockMvc;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
+/**
+ * Test class checking that {@link WebSecurityConfiguration} enforces authentication and role based authorization for the order
+ * API, while keeping documentation endpoints publicly accessible.
+ */
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@AutoConfigureMockMvc
+@Import(SecurityTestConfiguration.class)
+class WebSecurityConfigurationTest {
+
+    private static final String ORDER_ENDPOINT = "/api/order";
+
+    @Autowired
+    private transient MockMvc mockMvc;
+
+    @Test
+    void shouldAllowUnauthenticatedAccessToOpenApiDocumentation() throws Exception {
+
+        mockMvc.perform(get("/v3/api-docs")).andExpect(status().isOk());
+    }
+
+    @Test
+    void shouldRejectUnauthenticatedAccessToOrderApi() throws Exception {
+
+        mockMvc.perform(get(ORDER_ENDPOINT + "/some-order")).andExpect(status().isUnauthorized());
+        mockMvc.perform(post(ORDER_ENDPOINT).contentType(MediaType.APPLICATION_JSON).content("{}"))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void shouldRejectFindingOrderWithoutReadRole() throws Exception {
+
+        mockMvc.perform(get(ORDER_ENDPOINT + "/some-order").with(jwt().authorities(() -> "ROLE_ORDER_WRITE")))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldAllowFindingOrderWithReadRole() throws Exception {
+
+        final int status = mockMvc.perform(get(ORDER_ENDPOINT + "/some-order").with(jwt().authorities(() -> "ROLE_ORDER_READ")))
+                .andReturn()
+                .getResponse()
+                .getStatus();
+
+        assertThat(status).isNotIn(401, 403);
+    }
+
+    @Test
+    void shouldRejectPlacingOrderWithoutWriteRole() throws Exception {
+
+        mockMvc.perform(
+                post(ORDER_ENDPOINT).with(jwt().authorities(() -> "ROLE_ORDER_READ"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void shouldAllowPlacingOrderWithWriteRole() throws Exception {
+
+        mockMvc.perform(
+                post(ORDER_ENDPOINT).with(jwt().authorities(() -> "ROLE_ORDER_WRITE"))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().is5xxServerError());
+    }
+
+}

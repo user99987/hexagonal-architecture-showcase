@@ -1,0 +1,144 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend build, quality gates & tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build, verify quality gates and run tests
+        run: >
+          ./gradlew clean build
+          -x :adapter:ecommerce-frontend:npm_run_build
+          -x :adapter:ecommerce-frontend:npm_run_test
+          -x :adapter:ecommerce-frontend:runESLintCheck
+          -x :adapter:ecommerce-frontend:runUnitTests
+          -x :adapter:ecommerce-frontend:spotlessStylingCheck
+          -x :adapter:ecommerce-frontend:spotlessStyling
+          --continue
+
+      - name: Publish test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-reports
+          path: |
+            **/build/reports/tests/
+            **/build/test-results/
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Publish JaCoCo coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage-reports
+          path: '**/build/reports/jacoco/'
+          retention-days: 14
+          if-no-files-found: ignore
+
+      - name: Publish static analysis reports (Checkstyle, PMD, SpotBugs)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-static-analysis-reports
+          path: |
+            **/build/reports/checkstyle/
+            **/build/reports/pmd/
+            **/build/reports/spotbugs/
+          retention-days: 14
+          if-no-files-found: ignore
+
+  dependency-check:
+    name: OWASP dependency vulnerability scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Run OWASP DependencyCheck
+        env:
+          NVD_API_KEY: ${{ secrets.NVD_API_KEY }}
+        run: ./gradlew dependencyCheckAnalyze --continue
+        continue-on-error: true
+
+      - name: Publish DependencyCheck reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: dependency-check-report
+          path: '**/build/reports/security/'
+          retention-days: 14
+          if-no-files-found: ignore
+
+  frontend:
+    name: Frontend build, lint & test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: adapter/ecommerce-frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: adapter/ecommerce-frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npx ng lint
+
+      - name: Unit tests (headless Chrome)
+        run: npx ng test --no-watch --no-progress --browsers=ChromeHeadless --code-coverage
+
+      - name: Build
+        run: npm run build
+
+      - name: Publish frontend coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage-report
+          path: adapter/ecommerce-frontend/coverage/
+          retention-days: 14
+          if-no-files-found: ignore

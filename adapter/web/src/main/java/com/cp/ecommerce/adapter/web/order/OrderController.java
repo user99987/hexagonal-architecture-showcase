@@ -3,6 +3,7 @@ package com.cp.ecommerce.adapter.web.order;
 import java.util.Optional;
 
 import com.cp.ecommerce.adapter.common.exception.TechnicalProblemException;
+import com.cp.ecommerce.adapter.web.exception.resource.ErrorResource;
 import com.cp.ecommerce.adapter.web.order.mapper.OrderWebMapper;
 import com.cp.ecommerce.adapter.web.order.resource.OrderResource;
 import com.cp.ecommerce.domain.order.Order;
@@ -19,6 +20,11 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -27,6 +33,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RestController
 @RequestMapping("/api/order")
+@Tag(name = "Order", description = "Placing and retrieving orders")
 public class OrderController {
 
     private final PlaceOrderUseCase placeOrderUseCase;
@@ -37,6 +44,17 @@ public class OrderController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
+    @Operation(
+            summary = "Place a new order",
+            description = "Validates and persists a new order, returning its generated order number.")
+    @ApiResponse(
+            responseCode = "201",
+            description = "Order successfully placed",
+            content = @Content(schema = @Schema(implementation = String.class)))
+    @ApiResponse(
+            responseCode = "500",
+            description = "Order data is missing or invalid",
+            content = @Content(schema = @Schema(implementation = ErrorResource.class)))
     public String placeOrder(@RequestBody final OrderResource orderResource) {
 
         final Order order = orderWebMapper.mapToDomainObject(orderResource).orElse(null);
@@ -47,6 +65,15 @@ public class OrderController {
     }
 
     @GetMapping("/{orderNumber}")
+    @Operation(summary = "Find an order by its number")
+    @ApiResponse(
+            responseCode = "200",
+            description = "Order found",
+            content = @Content(schema = @Schema(implementation = Order.class)))
+    @ApiResponse(
+            responseCode = "404",
+            description = "Order not found",
+            content = @Content(schema = @Schema(implementation = ErrorResource.class)))
     public Order findOrder(@PathVariable("orderNumber") final String orderNumber) {
 
         final Order order = manageOrderUseCase.findOrder(orderNumber);

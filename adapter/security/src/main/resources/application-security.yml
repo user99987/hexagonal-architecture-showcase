@@ -24,3 +24,11 @@ management:
   httpexchanges:
     recording:
       enabled: false
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${security.oauth2.issuer-uri:http://localhost:8081/realms/ecommerce}
+          jwk-set-uri: ${security.oauth2.jwk-set-uri:http://localhost:8081/realms/ecommerce/protocol/openid-connect/certs}

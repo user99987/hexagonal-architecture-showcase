@@ -6,11 +6,19 @@ management:
     rabbit:
       enabled: false
 spring:
+  autoconfigure:
+    exclude: org.springdoc.core.configuration.SpringDocHateoasConfiguration
   liquibase:
     enabled: false
   jpa:
     database: H2
     database-platform: org.hibernate.dialect.H2Dialect
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8081/realms/ecommerce
+          jwk-set-uri: http://localhost:8081/realms/ecommerce/protocol/openid-connect/certs
   mail:
     default-encoding: UTF-8
     host: localhost
