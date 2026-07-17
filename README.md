@@ -196,3 +196,12 @@ an IDE) - they're unchanged and still reach the app via `host.docker.internal`.
 > developed in. Live `docker compose up` of the full stack (containers actually starting and talking to each
 > other) could not be verified there due to sandbox restrictions unrelated to this repository, and should be
 > exercised on a regular Docker Desktop/Engine install.
+
+## Outbox pattern
+
+Order persistence now uses a transactional outbox to avoid losing RabbitMQ events when the broker is temporarily unavailable, without introducing a 2-phase commit or a fragile dual-write between the database and AMQP.
+
+- `SaveOrderAdapter` writes the order row and a `PENDING` row in `OUTBOX_EVENT` in the same database transaction. If the transaction rolls back, neither record is kept.
+- `OutboxEventPublisher` polls pending rows on a schedule, reloads the full aggregate through `ManageOrderInPort.findOrder(...)`, publishes through `SendMessageInPort`, and marks the outbox row as `SENT` with a timestamp once publishing succeeds.
+- Message delivery still goes through the existing resilience4j-wrapped `SendOrderMessageAdapter`, so retry/circuit-breaker behavior is unchanged.
+- Properties: `outbox.publisher.enabled` (default `true`) and `outbox.publisher.poll-interval-ms` (default `5000`).

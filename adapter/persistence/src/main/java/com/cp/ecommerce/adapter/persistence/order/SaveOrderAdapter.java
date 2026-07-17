@@ -1,8 +1,13 @@
 package com.cp.ecommerce.adapter.persistence.order;
 
+import java.util.Date;
+
 import com.cp.ecommerce.adapter.common.annotation.PersistenceAdapter;
 import com.cp.ecommerce.adapter.persistence.order.entity.OrderEntityRepository;
 import com.cp.ecommerce.adapter.persistence.order.mapper.OrderPersistenceMapper;
+import com.cp.ecommerce.adapter.persistence.order.outbox.OutboxEventEntity;
+import com.cp.ecommerce.adapter.persistence.order.outbox.OutboxEventEntityRepository;
+import com.cp.ecommerce.adapter.persistence.order.outbox.OutboxEventStatus;
 import com.cp.ecommerce.domain.order.Order;
 import com.cp.ecommerce.domain.order.port.outgoing.SaveOrderOutPort;
 
@@ -22,9 +27,18 @@ public class SaveOrderAdapter implements SaveOrderOutPort {
 
     private final OrderEntityRepository orderEntityRepository;
 
+    private final OutboxEventEntityRepository outboxEventEntityRepository;
+
+    @Override
     public Order save(final Order order) {
 
         orderEntityRepository.save(orderPersistenceMapper.mapToEntity(order).orElseThrow());
+        outboxEventEntityRepository.save(
+                OutboxEventEntity.builder()
+                        .orderNumber(order.getOrderNumber())
+                        .status(OutboxEventStatus.PENDING)
+                        .createdDate(new Date())
+                        .build());
         return order;
     }
 

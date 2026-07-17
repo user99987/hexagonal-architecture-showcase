@@ -14,5 +14,6 @@
 
     <!-- changelogs -->
     <include file="changelogs/db.changelog-baseline.xml" relativeToChangelogFile="true" />
+    <include file="changelogs/db.changelog-outbox.xml" relativeToChangelogFile="true" />
 
 </databaseChangeLog>

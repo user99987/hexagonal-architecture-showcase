@@ -5,7 +5,6 @@ import com.cp.ecommerce.domain.customer.port.incoming.ManageCustomerInPort;
 import com.cp.ecommerce.domain.order.Order;
 import com.cp.ecommerce.domain.order.port.incoming.ManageOrderInPort;
 import com.cp.ecommerce.domain.order.port.incoming.PlaceOrderInPort;
-import com.cp.ecommerce.domain.order.port.incoming.SendMessageInPort;
 import com.cp.ecommerce.domain.order.port.outgoing.LogOrderOutPort;
 import com.cp.ecommerce.domain.order.port.outgoing.SendEmailOutPort;
 
@@ -23,8 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 public class PlaceOrderUseCase implements PlaceOrderInPort {
 
     private final ManageOrderInPort manageOrderInPort;
-
-    private final SendMessageInPort sendMessageInPort;
 
     private final SendEmailOutPort sendEmailOutPort;
 
@@ -48,9 +45,6 @@ public class PlaceOrderUseCase implements PlaceOrderInPort {
             sendEmailOutPort.send(savedOrder);
             log.info("Sending confirmation email completed.");
 
-            log.info("Starting process of sending message to queue.");
-            sendMessageInPort.sendMessage(savedOrder);
-            log.info("Sending message to queue completed.");
             return savedOrder.getOrderNumber();
         } else {
 

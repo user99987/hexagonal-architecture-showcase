@@ -10,6 +10,9 @@ import com.cp.ecommerce.adapter.persistence.order.SaveOrderAdapter;
 import com.cp.ecommerce.adapter.persistence.order.entity.OrderEntity;
 import com.cp.ecommerce.adapter.persistence.order.entity.OrderEntityRepository;
 import com.cp.ecommerce.adapter.persistence.order.mapper.OrderPersistenceMapper;
+import com.cp.ecommerce.adapter.persistence.order.outbox.OutboxEventEntity;
+import com.cp.ecommerce.adapter.persistence.order.outbox.OutboxEventEntityRepository;
+import com.cp.ecommerce.adapter.persistence.order.outbox.OutboxEventStatus;
 import com.cp.ecommerce.adapter.persistence.utils.CustomerEntityBuilder;
 import com.cp.ecommerce.domain.order.Order;
 
@@ -23,6 +26,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.TestPropertySource;
 
 import jakarta.persistence.EntityManager;
 
@@ -38,6 +42,7 @@ import static com.cp.ecommerce.adapter.common.utils.OrderBuilder.TEST_REMARKS;
 @DataJpaTest
 @ActiveProfiles("persistence-h2-in-memory")
 @ContextConfiguration(classes = PersistenceConfiguration.class)
+@TestPropertySource(properties = "outbox.publisher.enabled=false")
 class OrderPersistenceAdapterTest {
 
     @Autowired
@@ -54,6 +59,9 @@ class OrderPersistenceAdapterTest {
 
     @Autowired
     transient CacheManager cacheManager;
+
+    @Autowired
+    transient OutboxEventEntityRepository outboxEventEntityRepository;
 
     @Autowired
     transient SaveOrderAdapter adapter;
@@ -75,6 +83,7 @@ class OrderPersistenceAdapterTest {
         assertThat(adapter).isNotNull();
         assertThat(orderPersistenceMapper).isNotNull();
         assertThat(orderEntityRepository).isNotNull();
+        assertThat(outboxEventEntityRepository).isNotNull();
     }
 
     @Test
@@ -105,9 +114,36 @@ class OrderPersistenceAdapterTest {
 
         final Order order = OrderBuilder.mockOrder();
         final Order result = adapter.save(order);
+        final OutboxEventEntity outboxEvent = outboxEventEntityRepository.findAll().get(0);
 
         assertThat(result).isNotNull();
         assertThat(result.getOrderNumber()).isEqualTo(TEST_ORDER_NUMBER);
+        assertThat(outboxEvent.getOrderNumber()).isEqualTo(TEST_ORDER_NUMBER);
+        assertThat(outboxEvent.getStatus()).isEqualTo(OutboxEventStatus.PENDING);
+        assertThat(outboxEvent.getCreatedDate()).isNotNull();
+        assertThat(outboxEvent.getSentDate()).isNull();
+    }
+
+    @Test
+    @DirtiesContext
+    void shouldFindPendingOutboxEventsOrderedByCreatedDate() {
+
+        final OutboxEventEntity laterEvent = OutboxEventEntity.builder()
+                .orderNumber("5678")
+                .status(OutboxEventStatus.PENDING)
+                .createdDate(new Date(2L))
+                .build();
+        final OutboxEventEntity earlierEvent = OutboxEventEntity.builder()
+                .orderNumber(TEST_ORDER_NUMBER)
+                .status(OutboxEventStatus.PENDING)
+                .createdDate(new Date(1L))
+                .build();
+        outboxEventEntityRepository.save(laterEvent);
+        outboxEventEntityRepository.save(earlierEvent);
+
+        final var pendingEvents = outboxEventEntityRepository.findAllByStatusOrderByCreatedDateAsc(OutboxEventStatus.PENDING);
+
+        assertThat(pendingEvents).extracting(OutboxEventEntity::getOrderNumber).containsExactly(TEST_ORDER_NUMBER, "5678");
     }
 
 }

@@ -1,14 +1,10 @@
 package com.cp.ecommerce.adapter.web.order;
 
-import com.cp.ecommerce.adapter.mail.SendEmailAdapter;
 import com.cp.ecommerce.domain.customer.port.incoming.ManageCustomerInPort;
 import com.cp.ecommerce.domain.order.Order;
 import com.cp.ecommerce.domain.order.port.incoming.ManageOrderInPort;
-import com.cp.ecommerce.domain.order.port.incoming.SendMessageInPort;
-import com.cp.ecommerce.domain.order.port.outgoing.FindSequenceNumberOutPort;
-import com.cp.ecommerce.domain.order.port.outgoing.GenerateOrderNumberOutPort;
 import com.cp.ecommerce.domain.order.port.outgoing.LogOrderOutPort;
-import com.cp.ecommerce.domain.order.port.outgoing.SaveOrderOutPort;
+import com.cp.ecommerce.domain.order.port.outgoing.SendEmailOutPort;
 import com.cp.ecommerce.domain.order.usecase.PlaceOrderUseCase;
 
 import org.junit.jupiter.api.Test;
@@ -38,35 +34,22 @@ class PlaceOrderAdapterTest {
     private transient ManageCustomerInPort manageCustomerInPort;
 
     @Mock
-    private transient SendMessageInPort sendMessageInPort;
-
-    @Mock
-    private transient SaveOrderOutPort saveOrderOutPort;
-
-    @Mock
     private transient LogOrderOutPort logOrderOutPort;
 
     @Mock
-    private transient SendEmailAdapter emailServiceAdapter;
-
-    @Mock
-    private transient FindSequenceNumberOutPort findSequenceNumberOutPort;
-
-    @Mock
-    private transient GenerateOrderNumberOutPort generateOrderNumberOutPort;
+    private transient SendEmailOutPort sendEmailOutPort;
 
     @InjectMocks
     private transient PlaceOrderUseCase placeOrderUseCase;
 
     @Test
-    void shouldSendEmailAndMessageWithOrderRequest() {
+    void shouldSendEmailWithOrderRequest() {
 
         when(manageCustomerInPort.checkCustomerExists(any(String.class))).thenReturn(false);
         when(manageOrderInPort.saveOrder(any(Order.class))).thenReturn(mockOrder());
 
         assertFalse(placeOrderUseCase.placeOrder(mockOrder()).isEmpty());
-        verify(emailServiceAdapter, atLeastOnce()).send(any());
-        verify(sendMessageInPort, atLeastOnce()).sendMessage(any());
+        verify(sendEmailOutPort, atLeastOnce()).send(any());
     }
 
 }
