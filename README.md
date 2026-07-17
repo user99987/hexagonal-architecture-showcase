@@ -130,3 +130,20 @@ docker compose -f etc/docker/observability/docker-compose.yml up -d
 Grafana will be available at `http://localhost:3000` (admin/admin, or anonymous access is enabled for
 convenience). Prometheus scrapes the running application's actuator endpoint directly on the host, so start the
 Spring Boot application separately before/after bringing up the stack.
+
+## Resilience
+
+The two outbound integrations that talk to external systems - RabbitMQ (`SendOrderMessageAdapter`) and SMTP
+(`SendEmailAdapter`) - are wrapped with a circuit breaker and retry, implemented with
+[resilience4j](https://resilience4j.readme.io/). The registries and the reusable `ResilientExecutor` helper live in
+`adapter:common` (`com.cp.ecommerce.adapter.common.resilience`), so both adapters share the same defaults:
+
+- Retry: up to 3 attempts, 500ms wait between attempts.
+- Circuit breaker: opens once 50% of the last 10 calls fail, stays open for 10s, then allows 3 trial calls in
+  half-open state.
+
+Resilience4j's Spring Boot autoconfiguration starter is intentionally *not* used (to avoid the kind of Boot
+4-incompatible autoconfiguration issue already hit once with another library in this project); the registries are
+plain Java beans instead. When a `MeterRegistry` is present (i.e. the full application, not isolated module tests),
+circuit breaker/retry metrics are automatically bound to Micrometer and show up alongside the other Prometheus
+metrics described above.

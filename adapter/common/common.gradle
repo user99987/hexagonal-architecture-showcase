@@ -9,8 +9,14 @@ dependencies {
     annotationProcessor 'org.projectlombok:lombok'
 
     implementation 'com.fasterxml.jackson.core:jackson-annotations'
+    implementation 'io.github.resilience4j:resilience4j-circuitbreaker'
+    implementation 'io.github.resilience4j:resilience4j-core'
+    implementation 'io.github.resilience4j:resilience4j-micrometer'
+    implementation 'io.github.resilience4j:resilience4j-retry'
+    implementation 'io.micrometer:micrometer-core'
     implementation 'jakarta.validation:jakarta.validation-api'
     implementation 'org.apache.commons:commons-lang3'
+    implementation 'org.springframework.boot:spring-boot-autoconfigure'
     implementation 'org.apache.tomcat.embed:tomcat-embed-core'
     implementation 'org.assertj:assertj-core'
     implementation 'org.projectlombok:lombok'
@@ -33,6 +39,4 @@ artifacts {
     testArtifacts testJar
 }
 
-test {
-    exclude '**/*'
-}
+configureTestDependencies(project)

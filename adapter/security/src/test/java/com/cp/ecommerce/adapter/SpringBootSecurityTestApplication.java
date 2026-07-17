@@ -16,7 +16,8 @@ import org.springframework.context.annotation.Import;
                 "com.cp.ecommerce.adapter.mail",
                 "com.cp.ecommerce.adapter.persistence",
                 "com.cp.ecommerce.adapter.amqp",
-                "com.cp.ecommerce.domain" })
+                "com.cp.ecommerce.domain",
+                "com.cp.ecommerce.adapter.common" })
 @Import(PersistenceConfiguration.class)
 public class SpringBootSecurityTestApplication {
 

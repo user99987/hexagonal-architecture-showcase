@@ -2,6 +2,7 @@ package com.cp.ecommerce.adapter.amqp.order;
 
 import com.cp.ecommerce.adapter.amqp.order.mapper.OrderMessageMapper;
 import com.cp.ecommerce.adapter.common.annotation.WebAdapter;
+import com.cp.ecommerce.adapter.common.resilience.ResilientExecutor;
 import com.cp.ecommerce.domain.order.Order;
 import com.cp.ecommerce.domain.order.OrderMessage;
 import com.cp.ecommerce.domain.order.port.outgoing.SendOrderMessageOutPort;
@@ -25,15 +26,21 @@ import static com.cp.ecommerce.adapter.amqp.configuration.MessagingConfiguration
 @ConditionalOnProperty(name = "service.rabbitmq.enabled", havingValue = "true")
 public class SendOrderMessageAdapter implements SendOrderMessageOutPort {
 
+    private static final String RESILIENCE_INSTANCE_NAME = "sendOrderMessage";
+
     private final transient OrderMessageMapper mapper;
 
     private final transient RabbitTemplate rabbitTemplate;
+
+    private final transient ResilientExecutor resilientExecutor;
 
     public void send(final Order order) {
 
         final OrderMessage orderMessage = mapper.mapToMessage(order).orElse(null);
         log.info("Message: {}", orderMessage);
-        rabbitTemplate.convertAndSend(TOPIC_EXCHANGE_NAME, ROUTING_KEY, new Gson().toJson(orderMessage));
+        resilientExecutor.runResilient(
+                RESILIENCE_INSTANCE_NAME,
+                () -> rabbitTemplate.convertAndSend(TOPIC_EXCHANGE_NAME, ROUTING_KEY, new Gson().toJson(orderMessage)));
     }
 
 }

@@ -1,5 +1,6 @@
 package com.cp.ecommerce.adapter.mail;
 
+import com.cp.ecommerce.adapter.common.resilience.ResilientExecutor;
 import com.cp.ecommerce.adapter.common.utils.OrderBuilder;
 import com.cp.ecommerce.adapter.mail.message.EmailMessageFactory;
 import com.cp.ecommerce.domain.order.Order;
@@ -21,7 +22,9 @@ import jakarta.mail.internet.MimeMessage;
 
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
@@ -45,16 +48,20 @@ public class SendEmailAdapterTest {
     @Spy
     private transient JavaMailSenderImpl emailSender;
 
+    @Mock
+    private transient ResilientExecutor resilientExecutor;
+
     @InjectMocks
     private transient SendEmailAdapter sendEmailAdapter;
 
     @Test
-    void shouldSendEmailToCustomer() throws MessagingException {
+    void shouldSendEmailToCustomer() throws Exception {
 
         final Order order = OrderBuilder.mockOrder();
         final MimeMessage message = createMimeMessage();
         given(emailMessageFactory.createEmailMessage(any(Order.class))).willReturn(message);
         doNothing().when(emailSender).send(any(MimeMessage.class));
+        runResilientActionEagerly();
 
         sendEmailAdapter.send(order);
 
@@ -62,11 +69,22 @@ public class SendEmailAdapterTest {
     }
 
     @Test
-    void shouldThrowExceptionWhileSendingEmail() {
+    void shouldThrowExceptionWhileSendingEmail() throws Exception {
 
         final Order order = OrderBuilder.mockOrder();
+        runResilientActionEagerly();
+
         assertThrows(MailParseException.class, () -> sendEmailAdapter.send(order));
         verify(emailSender, never()).send(any(MimeMessage.class));
+    }
+
+    @SuppressWarnings("unchecked")
+    private void runResilientActionEagerly() throws Exception {
+
+        doAnswer(invocation -> {
+            final java.util.concurrent.Callable<Object> action = invocation.getArgument(1);
+            return action.call();
+        }).when(resilientExecutor).callResilient(anyString(), any());
     }
 
     private MimeMessage createMimeMessage() throws MessagingException {

@@ -4,6 +4,7 @@ import java.text.ParseException;
 import java.util.Optional;
 
 import com.cp.ecommerce.adapter.amqp.order.mapper.OrderMessageMapper;
+import com.cp.ecommerce.adapter.common.resilience.ResilientExecutor;
 import com.cp.ecommerce.domain.order.Order;
 
 import org.junit.jupiter.api.Test;
@@ -15,8 +16,10 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.verify;
 
 import static com.cp.ecommerce.adapter.amqp.configuration.MessagingConfiguration.ROUTING_KEY;
@@ -36,6 +39,9 @@ class SendOrderMessageAdapterTest {
     @Mock
     transient OrderMessageMapper mapper;
 
+    @Mock
+    transient ResilientExecutor resilientExecutor;
+
     @InjectMocks
     transient SendOrderMessageAdapter adapter;
 
@@ -44,10 +50,20 @@ class SendOrderMessageAdapterTest {
 
         final Order order = mockOrder();
         given(mapper.mapToMessage(order)).willReturn(Optional.ofNullable(mockOrderMessage()));
+        runResilientActionEagerly();
 
         adapter.send(order);
 
         verify(rabbitTemplate).convertAndSend(eq(TOPIC_EXCHANGE_NAME), eq(ROUTING_KEY), any(String.class));
+    }
+
+    private void runResilientActionEagerly() {
+
+        doAnswer(invocation -> {
+            final Runnable action = invocation.getArgument(1);
+            action.run();
+            return null;
+        }).when(resilientExecutor).runResilient(anyString(), any(Runnable.class));
     }
 
 }
