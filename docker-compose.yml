@@ -117,3 +117,51 @@ services:
     depends_on:
       - prometheus
       - tempo
+
+  # ---- AWS LocalStack stack (opt-in: docker compose --profile aws up) ----
+  #
+  # Start with: docker compose --profile aws up -d localstack
+  #             docker compose --profile aws up terraform
+  #
+  # When these services run they share the same Docker network as the rest of the stack,
+  # so inter-container traffic uses service names (http://localstack:4566).
+  # The Spring Boot app running on the HOST (./gradlew bootRun) reaches LocalStack via
+  # the published port: http://localhost:4566 - the same dual-endpoint pattern used by
+  # Keycloak above (issuer-uri uses localhost:8081, jwk-set-uri uses keycloak:8080).
+
+  localstack:
+    image: localstack/localstack:3.8
+    container_name: ecommerce-localstack
+    profiles: ["aws"]
+    environment:
+      - SERVICES=s3,sqs,secretsmanager
+      - DEBUG=0
+    ports:
+      - "4566:4566"
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:4566/_localstack/health | grep -q '\"s3\"'"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  terraform:
+    image: hashicorp/terraform:1.9
+    container_name: ecommerce-terraform
+    profiles: ["aws"]
+    depends_on:
+      localstack:
+        condition: service_healthy
+    # Mount read-write so Terraform can write .terraform/ and state files.
+    # State files and the .terraform lock file are git-ignored (see .gitignore).
+    volumes:
+      - ./etc/terraform:/workspace
+    working_dir: /workspace
+    environment:
+      # Container-to-container endpoint: Terraform runs inside Docker, so it reaches
+      # LocalStack via the service name on port 4566, NOT via localhost.
+      # (The Terraform provider's default localstack_endpoint variable is overridden here.)
+      - TF_VAR_localstack_endpoint=http://localstack:4566
+      - AWS_ACCESS_KEY_ID=test
+      - AWS_SECRET_ACCESS_KEY=test
+      - AWS_DEFAULT_REGION=us-east-1
+    entrypoint: ["sh", "-c", "terraform init && terraform apply -auto-approve"]

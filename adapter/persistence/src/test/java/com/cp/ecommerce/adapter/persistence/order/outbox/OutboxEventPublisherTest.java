@@ -5,7 +5,9 @@ import java.util.List;
 
 import com.cp.ecommerce.adapter.common.utils.OrderBuilder;
 import com.cp.ecommerce.domain.order.Order;
+import com.cp.ecommerce.domain.order.port.incoming.ExportOrderInPort;
 import com.cp.ecommerce.domain.order.port.incoming.ManageOrderInPort;
+import com.cp.ecommerce.domain.order.port.incoming.PublishOrderAuditEventInPort;
 import com.cp.ecommerce.domain.order.port.incoming.SendMessageInPort;
 
 import org.junit.jupiter.api.Test;
@@ -42,6 +44,12 @@ class OutboxEventPublisherTest {
     @Mock
     private transient SendMessageInPort sendMessageInPort;
 
+    @Mock
+    private transient ExportOrderInPort exportOrderInPort;
+
+    @Mock
+    private transient PublishOrderAuditEventInPort publishOrderAuditEventInPort;
+
     @Test
     void shouldPublishPendingOutboxEvents() {
 
@@ -56,6 +64,8 @@ class OutboxEventPublisherTest {
                 outboxEventEntityRepository,
                 manageOrderInPort,
                 sendMessageInPort,
+                exportOrderInPort,
+                publishOrderAuditEventInPort,
                 executeInSimpleTransaction());
         when(outboxEventEntityRepository.findAllByStatusOrderByCreatedDateAsc(OutboxEventStatus.PENDING))
                 .thenReturn(List.of(outboxEventEntity));
@@ -65,6 +75,8 @@ class OutboxEventPublisherTest {
 
         final ArgumentCaptor<OutboxEventEntity> outboxEventEntityCaptor = ArgumentCaptor.forClass(OutboxEventEntity.class);
         verify(sendMessageInPort, times(1)).sendMessage(order);
+        verify(exportOrderInPort, times(1)).exportOrder(order);
+        verify(publishOrderAuditEventInPort, times(1)).publishAuditEvent(order);
         verify(outboxEventEntityRepository, times(1)).save(outboxEventEntityCaptor.capture());
         assertThat(outboxEventEntityCaptor.getValue().getStatus()).isEqualTo(OutboxEventStatus.SENT);
         assertThat(outboxEventEntityCaptor.getValue().getSentDate()).isNotNull();
@@ -96,6 +108,8 @@ class OutboxEventPublisherTest {
                 outboxEventEntityRepository,
                 manageOrderInPort,
                 sendMessageInPort,
+                exportOrderInPort,
+                publishOrderAuditEventInPort,
                 executeInSimpleTransaction());
         when(outboxEventEntityRepository.findAllByStatusOrderByCreatedDateAsc(OutboxEventStatus.PENDING))
                 .thenReturn(List.of(failedEvent, successfulEvent));
@@ -113,6 +127,62 @@ class OutboxEventPublisherTest {
         assertThat(failedEvent.getSentDate()).isNull();
         assertThat(successfulEvent.getStatus()).isEqualTo(OutboxEventStatus.SENT);
         assertThat(successfulEvent.getSentDate()).isNotNull();
+    }
+
+    @Test
+    void shouldStillMarkEventSentWhenS3ExportFails() {
+
+        final Order order = OrderBuilder.mockOrder();
+        final OutboxEventEntity outboxEventEntity = OutboxEventEntity.builder()
+                .id(1L)
+                .orderNumber(order.getOrderNumber())
+                .status(OutboxEventStatus.PENDING)
+                .createdDate(new Date())
+                .build();
+        final OutboxEventPublisher outboxEventPublisher = new OutboxEventPublisher(
+                outboxEventEntityRepository,
+                manageOrderInPort,
+                sendMessageInPort,
+                exportOrderInPort,
+                publishOrderAuditEventInPort,
+                executeInSimpleTransaction());
+        when(outboxEventEntityRepository.findAllByStatusOrderByCreatedDateAsc(OutboxEventStatus.PENDING))
+                .thenReturn(List.of(outboxEventEntity));
+        when(manageOrderInPort.findOrder(order.getOrderNumber())).thenReturn(order);
+        doThrow(new RuntimeException("S3 unavailable")).when(exportOrderInPort).exportOrder(order);
+
+        assertDoesNotThrow(outboxEventPublisher::publishPendingEvents);
+
+        verify(outboxEventEntityRepository, times(1)).save(outboxEventEntity);
+        assertThat(outboxEventEntity.getStatus()).isEqualTo(OutboxEventStatus.SENT);
+    }
+
+    @Test
+    void shouldStillMarkEventSentWhenSqsAuditFails() {
+
+        final Order order = OrderBuilder.mockOrder();
+        final OutboxEventEntity outboxEventEntity = OutboxEventEntity.builder()
+                .id(1L)
+                .orderNumber(order.getOrderNumber())
+                .status(OutboxEventStatus.PENDING)
+                .createdDate(new Date())
+                .build();
+        final OutboxEventPublisher outboxEventPublisher = new OutboxEventPublisher(
+                outboxEventEntityRepository,
+                manageOrderInPort,
+                sendMessageInPort,
+                exportOrderInPort,
+                publishOrderAuditEventInPort,
+                executeInSimpleTransaction());
+        when(outboxEventEntityRepository.findAllByStatusOrderByCreatedDateAsc(OutboxEventStatus.PENDING))
+                .thenReturn(List.of(outboxEventEntity));
+        when(manageOrderInPort.findOrder(order.getOrderNumber())).thenReturn(order);
+        doThrow(new RuntimeException("SQS unavailable")).when(publishOrderAuditEventInPort).publishAuditEvent(order);
+
+        assertDoesNotThrow(outboxEventPublisher::publishPendingEvents);
+
+        verify(outboxEventEntityRepository, times(1)).save(outboxEventEntity);
+        assertThat(outboxEventEntity.getStatus()).isEqualTo(OutboxEventStatus.SENT);
     }
 
     private TransactionOperations executeInSimpleTransaction() {

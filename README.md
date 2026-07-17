@@ -254,3 +254,72 @@ The Angular frontend now uses a more production-like flow around the secured ord
 - a route guard that redirects anonymous users to `/login`
 - reactive forms with validation, loading states, and user-facing success/error feedback
 - unit coverage for auth, routing, shell, and order flows plus a Playwright happy-path e2e scaffold
+
+## AWS LocalStack & Terraform
+
+This roadmap item adds infrastructure-as-code and cloud-native integration skills to the
+showcase, using [LocalStack](https://localstack.cloud/) as a local AWS emulator and
+[Terraform](https://www.terraform.io/) to provision the resources.
+
+### What is provisioned
+
+| AWS Resource | Name | What the app does with it |
+|---|---|---|
+| S3 bucket | `ecommerce-order-exports` | Stores a JSON export of each successfully-processed order (`StoreOrderExportAdapter`) |
+| SQS queue | `ecommerce-order-audit` | Publishes a lightweight audit event per order (`PublishOrderAuditEventAdapter`) |
+| Secrets Manager secret | `ecommerce/db-credentials` | Provides Postgres username/password at startup (`SecretsManagerDbCredentialsEnvironmentPostProcessor`) |
+
+### Hexagonal architecture fit
+
+All three integrations follow the same **opt-in toggle pattern** already used by RabbitMQ:
+
+| Layer | New element |
+|---|---|
+| Domain outgoing port | `StoreOrderExportOutPort` / `PublishOrderAuditEventOutPort` |
+| Domain incoming port | `ExportOrderInPort` / `PublishOrderAuditEventInPort` |
+| Domain use case | `ExportOrderUseCase` / `PublishOrderAuditEventUseCase` |
+| Active adapter (`enabled=true`) | `StoreOrderExportAdapter` (S3) / `PublishOrderAuditEventAdapter` (SQS) |
+| No-op adapter (`enabled=false` / default) | `DoNotStoreOrderExportAdapter` / `DoNotPublishOrderAuditEventAdapter` |
+
+The S3/SQS adapters are wired as **best-effort side-channels** inside `OutboxEventPublisher`:
+they run after the primary RabbitMQ send and their failures never prevent the outbox event
+from being marked `SENT`.  The Secrets Manager integration is a standalone
+`EnvironmentPostProcessor` that injects DB credentials early in the Spring startup lifecycle.
+
+All three are **off by default** (`matchIfMissing = true` on the no-op adapters).  No existing
+test, profile, or build step is affected unless the `aws-localstack` profile is active.
+
+### Step-by-step: try it locally
+
+**Prerequisites**: Docker Desktop running, `docker compose` v2, the main app stack up (Postgres + RabbitMQ).
+
+```bash
+# 1. Start the existing infra stack (Postgres + RabbitMQ + Keycloak)
+docker compose --profile app up -d postgres rabbitmq keycloak
+
+# 2. Start LocalStack (published to http://localhost:4566)
+docker compose --profile aws up -d localstack
+
+# 3. Provision S3 / SQS / Secrets Manager via Terraform
+#    (waits for LocalStack healthy, then applies automatically)
+docker compose --profile aws up terraform
+
+# 4. Start the Spring Boot app with the aws-localstack profile
+SPRING_PROFILES_ACTIVE=postgres-amqp-local,aws-localstack ./gradlew bootRun
+
+# 5. Place an order (get a token from Keycloak first, then POST /api/order)
+
+# 6. Verify S3 export
+docker exec ecommerce-localstack awslocal s3 cp \
+  s3://ecommerce-order-exports/orders/<orderNumber>.json -
+
+# 7. Verify SQS audit event
+docker exec ecommerce-localstack awslocal sqs receive-message \
+  --queue-url http://localhost:4566/000000000000/ecommerce-order-audit
+
+# 8. Verify Secrets Manager (credentials should match docker-compose Postgres values)
+docker exec ecommerce-localstack awslocal secretsmanager get-secret-value \
+  --secret-id ecommerce/db-credentials
+```
+
+For full Terraform details see [`etc/terraform/README.md`](etc/terraform/README.md).

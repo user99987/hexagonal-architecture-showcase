@@ -1,0 +1,46 @@
+# Profile: aws-localstack
+#
+# Enables the AWS / LocalStack integrations (S3 order export, SQS audit events,
+# Secrets Manager DB credentials) and points all three AWS SDK clients at a locally
+# running LocalStack instance.
+#
+# ---- HOW TO USE ----
+# Combine this profile with your DB+messaging profile when starting the app on the HOST
+# (i.e. via `./gradlew bootRun`) against a docker-composed LocalStack that Terraform has
+# already provisioned:
+#
+#   SPRING_PROFILES_ACTIVE=postgres-amqp-local,aws-localstack ./gradlew bootRun
+#
+# Ensure LocalStack is running first (see etc/terraform/README.md):
+#   docker compose --profile aws up -d localstack
+#   docker compose --profile aws up terraform        # provisions S3 / SQS / Secrets Manager
+#
+# ---- ENDPOINT NOTE (same dual-URL pattern as Keycloak in application-docker.yml) ----
+# When the Spring Boot app runs on the HOST machine, it reaches LocalStack via the
+# port published to localhost: http://localhost:4566
+# When the app runs INSIDE the same Docker network as LocalStack (e.g. the 'app' service
+# in docker-compose.yml), it would use the Docker service name instead: http://localstack:4566
+# The value below is for host-based bootRun usage; update it for container-to-container use.
+
+service:
+  aws:
+    s3:
+      enabled: true
+    sqs:
+      enabled: true
+    secretsmanager:
+      enabled: true
+
+aws:
+  region: us-east-1
+  # Host-to-container URL: the Spring Boot app running on the host reaches LocalStack here.
+  # If the app were running inside the Docker network, use http://localstack:4566 instead.
+  endpoint-override: http://localhost:4566
+  access-key-id: test
+  secret-access-key: test
+  s3:
+    bucket-name: ecommerce-order-exports
+  sqs:
+    queue-url: http://localhost:4566/000000000000/ecommerce-order-audit
+  secretsmanager:
+    secret-name: ecommerce/db-credentials

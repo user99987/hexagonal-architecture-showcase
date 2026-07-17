@@ -3,7 +3,9 @@ package com.cp.ecommerce.adapter.persistence.order.outbox;
 import java.util.Date;
 
 import com.cp.ecommerce.domain.order.Order;
+import com.cp.ecommerce.domain.order.port.incoming.ExportOrderInPort;
 import com.cp.ecommerce.domain.order.port.incoming.ManageOrderInPort;
+import com.cp.ecommerce.domain.order.port.incoming.PublishOrderAuditEventInPort;
 import com.cp.ecommerce.domain.order.port.incoming.SendMessageInPort;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -28,6 +30,10 @@ public class OutboxEventPublisher {
     private final ManageOrderInPort manageOrderInPort;
 
     private final SendMessageInPort sendMessageInPort;
+
+    private final ExportOrderInPort exportOrderInPort;
+
+    private final PublishOrderAuditEventInPort publishOrderAuditEventInPort;
 
     private final TransactionOperations transactionOperations;
 
@@ -57,9 +63,29 @@ public class OutboxEventPublisher {
 
         final Order order = manageOrderInPort.findOrder(outboxEventEntity.getOrderNumber());
         sendMessageInPort.sendMessage(order);
+        exportOrderBestEffort(order);
+        publishAuditEventBestEffort(order);
         outboxEventEntity.setStatus(OutboxEventStatus.SENT);
         outboxEventEntity.setSentDate(new Date());
         outboxEventEntityRepository.save(outboxEventEntity);
+    }
+
+    private void exportOrderBestEffort(final Order order) {
+
+        try {
+            exportOrderInPort.exportOrder(order);
+        } catch (RuntimeException exception) {
+            log.warn("Could not export order to S3 (best-effort): {}", order.getOrderNumber(), exception);
+        }
+    }
+
+    private void publishAuditEventBestEffort(final Order order) {
+
+        try {
+            publishOrderAuditEventInPort.publishAuditEvent(order);
+        } catch (RuntimeException exception) {
+            log.warn("Could not publish SQS audit event (best-effort): {}", order.getOrderNumber(), exception);
+        }
     }
 
 }

@@ -11,7 +11,8 @@ import com.tngtech.archunit.core.domain.JavaClasses;
  */
 public class Adapter extends ArchitectureElement {
 
-    private static final List<String> ADAPTER_PACKAGES = Arrays.asList("persistence.", "web.", "mail.", "security.", "amqp.");
+    private static final List<String> ADAPTER_PACKAGES = Arrays
+            .asList("persistence.", "web.", "mail.", "security.", "amqp.", "aws.");
     /**
      * Special cases list to omit checks for duplicated package names in path, like ex. "security.security"
      */

@@ -9,3 +9,7 @@ target/
 generated/
 *.db
 postgres-data/
+etc/terraform/.terraform/
+etc/terraform/*.tfstate
+etc/terraform/*.tfstate.backup
+etc/terraform/.terraform.lock.hcl
