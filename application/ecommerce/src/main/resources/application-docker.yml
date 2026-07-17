@@ -1,0 +1,27 @@
+# Profile for running the fully containerized app (see root Dockerfile / docker-compose.yml)
+# against dockerized Postgres, RabbitMQ, Keycloak and the observability stack, all sharing
+# the same Docker network.
+spring:
+  config:
+    import:
+      classpath:application.yml,classpath:application-persistence-postgres-docker.yml,classpath:application-amqp-docker.yml
+  liquibase:
+    contexts: local
+
+service:
+  mail:
+    enabled: false
+
+security:
+  oauth2:
+    # Must match the "iss" claim of tokens issued by Keycloak, i.e. whatever host:port the
+    # browser/API client used to obtain them (Keycloak is published on the host at 8081).
+    issuer-uri: http://localhost:8081/realms/ecommerce
+    # Used for the actual (server-to-server) JWK set fetch, so it uses the internal Docker
+    # network service name instead, which is reachable from within the app container.
+    jwk-set-uri: http://keycloak:8080/realms/ecommerce/protocol/openid-connect/certs
+
+observability:
+  otlp:
+    # Tempo (see etc/docker/observability) is in the same Docker network in this topology.
+    tracing-endpoint: http://tempo:4318/v1/traces

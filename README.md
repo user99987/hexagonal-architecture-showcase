@@ -147,3 +147,52 @@ Resilience4j's Spring Boot autoconfiguration starter is intentionally *not* used
 plain Java beans instead. When a `MeterRegistry` is present (i.e. the full application, not isolated module tests),
 circuit breaker/retry metrics are automatically bound to Micrometer and show up alongside the other Prometheus
 metrics described above.
+
+## App containerization
+
+The application itself (backend + built-in Angular frontend) can now be built and run as a container, in addition
+to the existing standalone infrastructure compose files under `etc/docker/*`.
+
+- `Dockerfile` (repo root): multi-stage build. The builder stage (`eclipse-temurin:21-jdk`, glibc-based) runs
+  `./gradlew :application:ecommerce:bootJar`, which also triggers the Angular frontend build (the backend module
+  depends on the frontend's generated resources). A glibc base is required here because the Gradle Node plugin
+  downloads official Node.js binaries, which are not musl/Alpine-compatible. The runtime stage
+  (`eclipse-temurin:21-jre-alpine`) only needs the built jar, so it stays slim, and runs as a non-root user with an
+  actuator-based `HEALTHCHECK`.
+- `.dockerignore`: excludes `.git`, `.gradle`/`**/.gradle`, `build`/`**/build`, `node_modules`, etc. Note that
+  excluding `.git` disables the `gradle-git-properties` plugin's git metadata lookup; this is handled by setting
+  `gitProperties { failOnNoGitDirectory = false }` in `application/ecommerce/ecommerce.gradle`.
+- `docker-compose.yml` (repo root): brings up the full stack in one command - `app`, `postgres` (official
+  `postgres:16-alpine` image), `rabbitmq` (`rabbitmq:3-management-alpine`), `keycloak`
+  (`quay.io/keycloak/keycloak:26.0`, importing the same realm used by the JWT security section), and the
+  observability stack (`prometheus`, `tempo`, `grafana` - the same images/provisioning as
+  `etc/docker/observability`). The app container waits on postgres/rabbitmq health checks, keycloak and tempo
+  starting. Since the app now shares the same network as Prometheus/Tempo, it uses a dedicated
+  `prometheus-docker.yml` scrape config (`app:9081` instead of `host.docker.internal:9081`), and the app's OTLP
+  traces go straight to `tempo:4318` instead of via `host.docker.internal`.
+- A new `docker` Spring profile ties this together:
+  - `application/ecommerce/src/main/resources/application-docker.yml` imports two new sub-profiles
+    (`amqp-docker`, `persistence-postgres-docker`) that point at the in-network service names (`rabbitmq`,
+    `postgres`) instead of `localhost`.
+  - The OAuth2 `issuer-uri` is kept as the browser-facing `http://localhost:8081/realms/ecommerce` (it must match
+    the `iss` claim of tokens issued to a browser client), while `jwk-set-uri` uses the in-network address
+    `http://keycloak:8080/...` for the app container to actually fetch signing keys - avoiding the need to
+    reconfigure Keycloak's own hostname/frontend URL for this showcase.
+  - The OTLP tracing endpoint points at `http://tempo:4318/v1/traces` (the in-network Tempo instance started as
+    part of this same compose file).
+
+To build and run everything:
+
+```
+docker compose up --build
+```
+
+The app will be available on `http://localhost:9080` (app) and `http://localhost:9081` (actuator), Grafana on
+`http://localhost:3000` (admin/admin), matching the existing port conventions. The standalone compose files under
+`etc/docker/*` remain useful for the "app on host, infra in Docker" workflow (e.g. running/debugging the app from
+an IDE) - they're unchanged and still reach the app via `host.docker.internal`.
+
+> Note: `docker build` was verified to produce a working image end-to-end in the environment this feature was
+> developed in. Live `docker compose up` of the full stack (containers actually starting and talking to each
+> other) could not be verified there due to sandbox restrictions unrelated to this repository, and should be
+> exercised on a regular Docker Desktop/Engine install.

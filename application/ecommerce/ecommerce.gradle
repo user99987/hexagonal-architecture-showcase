@@ -2,6 +2,12 @@ apply plugin: 'com.gorylenko.gradle-git-properties'
 apply from: '../../etc/spotless/spotless-java.gradle'
 apply from: '../../etc/dependencycheck/dependencycheck.gradle'
 
+// Docker builds don't include the .git directory in their build context (see .dockerignore),
+// so don't fail the build when it's absent - just skip generating git.properties in that case.
+gitProperties {
+    failOnNoGitDirectory = false
+}
+
 evaluationDependsOn(':adapter:ecommerce-backend')
 
 configureBootProject(project, 'ecommerce')

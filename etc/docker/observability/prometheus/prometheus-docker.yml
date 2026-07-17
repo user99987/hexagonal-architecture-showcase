@@ -1,0 +1,12 @@
+global:
+  scrape_interval: 5s
+  evaluation_interval: 5s
+
+# Variant of prometheus.yml used when the app itself also runs in the same Docker network
+# (see root docker-compose.yml), scraping the app container by service name instead of
+# host.docker.internal.
+scrape_configs:
+  - job_name: 'ecommerce-app'
+    metrics_path: '/actuator/prometheus'
+    static_configs:
+      - targets: ['app:9081']
