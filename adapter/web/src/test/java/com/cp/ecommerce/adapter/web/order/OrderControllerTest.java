@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import com.cp.ecommerce.adapter.common.utils.OrderBuilder;
 import com.cp.ecommerce.adapter.web.order.mapper.OrderWebMapper;
+import com.cp.ecommerce.adapter.web.order.metrics.OrderMetrics;
 import com.cp.ecommerce.adapter.web.utils.OrderResourceBuilder;
 import com.cp.ecommerce.domain.order.usecase.ManageOrderUseCase;
 import com.cp.ecommerce.domain.order.usecase.PlaceOrderUseCase;
@@ -66,6 +67,9 @@ class OrderControllerTest {
     @Mock
     private transient OrderWebMapper orderWebMapper;
 
+    @Mock
+    private transient OrderMetrics orderMetrics;
+
     @BeforeEach
     public void setUp() {
 
@@ -84,6 +88,7 @@ class OrderControllerTest {
                 .getContentAsString();
 
         verify(placeOrderUseCase, atLeastOnce()).placeOrder(any());
+        verify(orderMetrics, atLeastOnce()).recordOrderPlaced();
     }
 
     @Test
@@ -97,6 +102,7 @@ class OrderControllerTest {
 
         verify(placeOrderUseCase, never()).placeOrder(null);
         verify(orderWebMapper, atMostOnce()).mapToDomainObject(any());
+        verify(orderMetrics, never()).recordOrderPlaced();
         assertTrue(exception.getMessage().contains("Order data is missing"));
     }
 

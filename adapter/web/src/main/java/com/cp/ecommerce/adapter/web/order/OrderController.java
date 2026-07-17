@@ -5,6 +5,7 @@ import java.util.Optional;
 import com.cp.ecommerce.adapter.common.exception.TechnicalProblemException;
 import com.cp.ecommerce.adapter.web.exception.resource.ErrorResource;
 import com.cp.ecommerce.adapter.web.order.mapper.OrderWebMapper;
+import com.cp.ecommerce.adapter.web.order.metrics.OrderMetrics;
 import com.cp.ecommerce.adapter.web.order.resource.OrderResource;
 import com.cp.ecommerce.domain.order.Order;
 import com.cp.ecommerce.domain.order.usecase.ManageOrderUseCase;
@@ -42,6 +43,8 @@ public class OrderController {
 
     private final OrderWebMapper orderWebMapper;
 
+    private final OrderMetrics orderMetrics;
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     @Operation(
@@ -61,7 +64,9 @@ public class OrderController {
         Optional.ofNullable(order).ifPresentOrElse(Order::assertValidationsEmpty, () -> {
             throw new TechnicalProblemException("Order data is missing");
         });
-        return placeOrderUseCase.placeOrder(order);
+        final String orderNumber = placeOrderUseCase.placeOrder(order);
+        orderMetrics.recordOrderPlaced();
+        return orderNumber;
     }
 
     @GetMapping("/{orderNumber}")

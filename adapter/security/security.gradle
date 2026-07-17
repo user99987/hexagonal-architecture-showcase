@@ -24,6 +24,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-micrometer-metrics'
     implementation 'org.springframework.boot:spring-boot-restclient'
     implementation 'org.springframework.boot:spring-boot-security'
+    implementation 'org.springframework.boot:spring-boot-starter-opentelemetry'
     implementation 'org.springframework.boot:spring-boot-starter-security-oauth2-resource-server'
     implementation 'org.springframework.boot:spring-boot-starter-validation'
     implementation 'org.springframework.security:spring-security-config'

@@ -24,6 +24,15 @@ management:
   httpexchanges:
     recording:
       enabled: false
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${observability.otlp.tracing-endpoint:http://localhost:4318/v1/traces}
+    metrics:
+      export:
+        enabled: false
 
 spring:
   security:

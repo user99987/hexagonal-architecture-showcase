@@ -13,6 +13,7 @@ Among many frameworks, libraries and tools, the most important being used are as
 - Java
 - Angular
 - Spring Boot
+- Spring Security (OAuth2 Resource Server / JWT)
 - Gradle
 - Hibernate
 - Liquibase
@@ -27,6 +28,9 @@ Among many frameworks, libraries and tools, the most important being used are as
 - Jakarta Mail
 - Ehcache
 - Freemarker
+- OpenAPI (Swagger UI)
+- Micrometer / Prometheus / OpenTelemetry
+- GitHub Actions
 
 ### Plugins
 
@@ -65,3 +69,64 @@ The application can be started using one of 4 pre-defined run configurations:
 - postgres-amqp - Postgres database without RabbitMq connection
 
 Docker images for Postgres server and RabbitMq instance can be found in */etc/docker* directory. `docker-compose up -d` command will pull images and start containers.
+
+## Continuous Integration
+
+A GitHub Actions pipeline (`.github/workflows/ci.yml`) runs on every push/PR: backend build, test and quality
+gates (Checkstyle, PMD, SpotBugs, JaCoCo, Spotless), an OWASP DependencyCheck scan, and a separate frontend
+build/lint/test job.
+
+## API documentation
+
+The REST API is documented with [springdoc-openapi](https://springdoc.org/) and exposed via Swagger UI once the
+application is running:
+
+- Swagger UI: `http://localhost:9080/home/swagger-ui/index.html`
+- Raw OpenAPI spec: `http://localhost:9080/home/v3/api-docs`
+
+Both are publicly accessible (no authentication required) so the API can be explored immediately.
+
+## Authentication & authorization
+
+The order API (`/api/order/**`) is secured with Spring Security's OAuth2 Resource Server support, validating
+JWT bearer tokens issued by Keycloak. Two realm roles gate access:
+
+- `ORDER_READ` – required to `GET /api/order/{orderNumber}`
+- `ORDER_WRITE` – required to `POST /api/order`
+
+Everything else (the Angular frontend under `/home`, Swagger UI, actuator health/info/metrics/prometheus
+endpoints) remains publicly accessible.
+
+A ready-to-use local Keycloak instance (realm `ecommerce`, client `ecommerce-app`, roles and two demo users
+`order-admin`/`order-viewer`) is provided under `/etc/docker/keycloak`:
+
+```
+docker compose -f etc/docker/keycloak/docker-compose.yml up -d
+```
+
+Keycloak will be available at `http://localhost:8081`. Configure the issuer/JWK-set URIs via
+`security.oauth2.issuer-uri` / `security.oauth2.jwk-set-uri` if running Keycloak elsewhere (see
+`application-security.yml`).
+
+## Observability
+
+The application exposes Prometheus-formatted metrics (including a custom `orders_placed_total` business metric)
+and distributed traces via OpenTelemetry/OTLP, in addition to the usual health/info actuator endpoints:
+
+- Metrics (Prometheus format): `http://localhost:9081/actuator/prometheus`
+- Health: `http://localhost:9081/actuator/health`
+- Traces are exported over OTLP/HTTP to `http://localhost:4318/v1/traces` (configurable via
+  `management.otlp.tracing.endpoint`), with 100% sampling enabled for local/demo purposes.
+- Structured JSON console logging (Elastic Common Schema) can be enabled by activating the `json-logging`
+  Spring profile, useful for log aggregation in containerized/production environments.
+
+A ready-to-use observability stack (Prometheus + Grafana + Tempo, with pre-provisioned datasources and an
+"Ecommerce Showcase - Overview" dashboard) is provided under `/etc/docker/observability`:
+
+```
+docker compose -f etc/docker/observability/docker-compose.yml up -d
+```
+
+Grafana will be available at `http://localhost:3000` (admin/admin, or anonymous access is enabled for
+convenience). Prometheus scrapes the running application's actuator endpoint directly on the host, so start the
+Spring Boot application separately before/after bringing up the stack.
