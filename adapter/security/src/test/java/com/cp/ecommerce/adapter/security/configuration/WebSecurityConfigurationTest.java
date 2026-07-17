@@ -38,6 +38,14 @@ class WebSecurityConfigurationTest {
     }
 
     @Test
+    void shouldAllowUnauthenticatedAccessToFrontendStaticAssets() throws Exception {
+
+        final int status = mockMvc.perform(get("/index.html")).andReturn().getResponse().getStatus();
+
+        assertThat(status).isNotIn(401, 403);
+    }
+
+    @Test
     void shouldRejectUnauthenticatedAccessToOrderApi() throws Exception {
 
         mockMvc.perform(get(ORDER_ENDPOINT + "/some-order")).andExpect(status().isUnauthorized());

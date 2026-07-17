@@ -26,8 +26,6 @@ public class WebSecurityConfiguration {
 
     public static final int WEB_SECURITY_CONFIGURER_ADAPTER_ORDER = 100;
 
-    private static final String CONTEXT_PATH_MATCHER = "/home/**";
-
     private static final String ORDER_API_PATH_MATCHER = "/api/order/**";
 
     private static final String H2_PATH_MATCHER = "/h2-console/**";
@@ -47,19 +45,17 @@ public class WebSecurityConfiguration {
     }
 
     @Bean
-    public SecurityFilterChain webSecurityFilterChain(final HttpSecurity http) throws Exception {
+    public SecurityFilterChain webSecurityFilterChain(final HttpSecurity http) {
 
         http.authorizeHttpRequests(
-                authorize -> authorize.requestMatchers(CONTEXT_PATH_MATCHER)
-                        .permitAll()
-                        .requestMatchers(OPEN_API_PATH_MATCHERS)
+                authorize -> authorize.requestMatchers(OPEN_API_PATH_MATCHERS)
                         .permitAll()
                         .requestMatchers(HttpMethod.GET, ORDER_API_PATH_MATCHER)
                         .hasRole(ORDER_READ_ROLE)
                         .requestMatchers(HttpMethod.POST, ORDER_API_PATH_MATCHER)
                         .hasRole(ORDER_WRITE_ROLE)
                         .anyRequest()
-                        .authenticated())
+                        .permitAll())
                 .oauth2ResourceServer(
                         oauth2 -> oauth2.jwt(jwt -> jwt.jwtAuthenticationConverter(keycloakJwtAuthenticationConverter)))
                 .exceptionHandling(withDefaults())

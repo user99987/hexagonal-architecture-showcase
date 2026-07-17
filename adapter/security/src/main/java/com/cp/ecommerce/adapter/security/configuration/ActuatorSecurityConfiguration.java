@@ -38,7 +38,7 @@ public class ActuatorSecurityConfiguration {
     private final ManagementUserProperties properties;
 
     @Bean
-    public SecurityFilterChain actuatorSecurityFilterChain(final HttpSecurity http) throws Exception {
+    public SecurityFilterChain actuatorSecurityFilterChain(final HttpSecurity http) {
 
         http.securityMatcher(EndpointRequest.toAnyEndpoint())
                 .authorizeHttpRequests(
