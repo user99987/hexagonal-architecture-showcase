@@ -1,5 +1,45 @@
-<div>
-  <button (click)="placeOrder()" id="order-button" type="button">
-    {{ 'ORDER' }}
-  </button>
+<div class="order-container">
+  <h2>Place an Order</h2>
+  <form [formGroup]="orderForm" (ngSubmit)="placeOrder()">
+    <div class="field">
+      <label for="remarks">Remarks</label>
+      <textarea
+        id="remarks"
+        formControlName="remarks"
+        rows="4"
+        data-testid="order-remarks"
+        placeholder="Enter your order remarks…"
+      ></textarea>
+      @if (remarksControl.invalid && remarksControl.touched) {
+        @if (remarksControl.errors?.['required']) {
+          <span class="error">Remarks are required.</span>
+        }
+        @if (remarksControl.errors?.['maxlength']) {
+          <span class="error">Remarks must be at most 800 characters.</span>
+        }
+      }
+    </div>
+    <button
+      type="submit"
+      [disabled]="orderForm.invalid || submitting()"
+      data-testid="order-submit"
+    >
+      {{ submitting() ? 'Placing order…' : 'Place Order' }}
+    </button>
+  </form>
+
+  @if (submitting()) {
+    <p class="loading">Processing your order…</p>
+  }
+
+  @if (orderNumber()) {
+    <div class="success" role="status">
+      Order placed successfully! Order number:
+      <strong data-testid="order-number">{{ orderNumber() }}</strong>
+    </div>
+  }
+
+  @if (errorMessage()) {
+    <div class="error-message" role="alert">{{ errorMessage() }}</div>
+  }
 </div>

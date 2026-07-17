@@ -10,7 +10,7 @@ import { environment } from '@environments/environment';
 import {
   provideHttpClient,
   withInterceptorsFromDi,
-  withXhr
+  withXhr,
 } from '@angular/common/http';
 
 describe('OrderService', () => {
@@ -46,12 +46,12 @@ describe('OrderService', () => {
 
     //when
     orderService
-      .placeOrder()
+      .placeOrder('test remarks')
       .subscribe((data) => expect(data).toBe(orderResponse));
 
     //then
     const req = httpTestingController.expectOne(
-      `${environment.apiPrefix}/order`
+      `${environment.apiPrefix}/order`,
     );
     expect(req.request.method).toBe('POST');
 

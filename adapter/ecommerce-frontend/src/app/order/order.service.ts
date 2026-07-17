@@ -16,17 +16,11 @@ export class OrderService {
     }),
   };
 
-  private static buildOrderRequest(): OrderRequestModel {
-    return {
-      remarks: 'remarks',
-      created: new Date(),
-    };
-  }
-
-  placeOrder(): Observable<OrderResponseModel> {
+  placeOrder(remarks: string): Observable<OrderResponseModel> {
+    const body: OrderRequestModel = { remarks, created: new Date() };
     return this.httpClient.post<OrderResponseModel>(
       `${environment.apiPrefix}/order`,
-      OrderService.buildOrderRequest(),
+      body,
       this.httpOptions,
     );
   }

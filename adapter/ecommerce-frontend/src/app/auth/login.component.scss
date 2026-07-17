@@ -1,9 +1,9 @@
-.order-container {
-  max-width: 640px;
-  margin: 3rem auto;
+.login-container {
+  max-width: 400px;
+  margin: 4rem auto;
   padding: 2rem;
 
-  h2 {
+  h1 {
     margin-bottom: 1.5rem;
   }
 
@@ -16,13 +16,12 @@
       font-weight: 500;
     }
 
-    textarea {
+    input {
       width: 100%;
-      padding: 0.75rem;
+      padding: 0.5rem;
       box-sizing: border-box;
       border: 1px solid #ccc;
       border-radius: 4px;
-      resize: vertical;
     }
   }
 
@@ -33,31 +32,17 @@
     display: block;
   }
 
-  .error-message,
-  .success {
-    margin-top: 1rem;
-    padding: 0.75rem;
+  .error-message {
+    color: #d32f2f;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    border: 1px solid #d32f2f;
     border-radius: 4px;
   }
 
-  .error-message {
-    color: #d32f2f;
-    border: 1px solid #d32f2f;
-  }
-
-  .success {
-    color: #1b5e20;
-    border: 1px solid #66bb6a;
-    background: #f1f8e9;
-  }
-
-  .loading {
-    margin-top: 1rem;
-    color: #455a64;
-  }
-
-  button[type='submit'] {
-    padding: 0.75rem 1.5rem;
+  button[type="submit"] {
+    width: 100%;
+    padding: 0.75rem;
     background-color: #1976d2;
     color: white;
     border: none;
@@ -68,6 +53,24 @@
     &:disabled {
       background-color: #b0bec5;
       cursor: not-allowed;
+    }
+  }
+
+  .demo-hint {
+    margin-top: 2rem;
+    padding: 1rem;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+
+    ul {
+      margin: 0.5rem 0 0;
+      padding-left: 1.25rem;
+    }
+
+    code {
+      background: #e0e0e0;
+      padding: 0.1rem 0.3rem;
+      border-radius: 3px;
     }
   }
 }

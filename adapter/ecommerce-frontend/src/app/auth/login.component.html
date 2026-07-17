@@ -1,0 +1,54 @@
+<div class="login-container">
+  <h1>Sign In</h1>
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    <div class="field">
+      <label for="username">Username</label>
+      <input
+        id="username"
+        type="text"
+        formControlName="username"
+        data-testid="login-username"
+        autocomplete="username"
+      />
+      @if (usernameControl.invalid && usernameControl.touched) {
+        <span class="error">Username is required.</span>
+      }
+    </div>
+    <div class="field">
+      <label for="password">Password</label>
+      <input
+        id="password"
+        type="password"
+        formControlName="password"
+        data-testid="login-password"
+        autocomplete="current-password"
+      />
+      @if (passwordControl.invalid && passwordControl.touched) {
+        <span class="error">Password is required.</span>
+      }
+    </div>
+    @if (errorMessage()) {
+      <div class="error-message" role="alert">{{ errorMessage() }}</div>
+    }
+    <button
+      type="submit"
+      [disabled]="loginForm.invalid || submitting()"
+      data-testid="login-submit"
+    >
+      {{ submitting() ? 'Signing in…' : 'Sign In' }}
+    </button>
+  </form>
+  <div class="demo-hint">
+    <strong>Demo credentials:</strong>
+    <ul>
+      <li>
+        <code>order-admin</code> / <code>password</code> — full access
+        (ORDER_READ + ORDER_WRITE)
+      </li>
+      <li>
+        <code>order-viewer</code> / <code>password</code> — read-only
+        (ORDER_READ)
+      </li>
+    </ul>
+  </div>
+</div>

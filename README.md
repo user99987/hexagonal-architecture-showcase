@@ -243,3 +243,14 @@ The AMQP module also includes a lightweight producer-side contract test for the 
 the full operational footprint of Spring Cloud Contract or Pact (stub artifacts, brokers or additional publishing
 infrastructure), the showcase verifies the real `Order -> OrderMessage -> Gson JSON` path directly and asserts the
 wire-level schema that a consumer depends on.
+
+## Frontend modernization
+
+The Angular frontend now uses a more production-like flow around the secured order API:
+
+- standalone routed screens for login and order placement
+- JWT-based sign-in against the local Keycloak realm (`ecommerce-app`)
+- an HTTP interceptor that attaches bearer tokens only to backend API calls
+- a route guard that redirects anonymous users to `/login`
+- reactive forms with validation, loading states, and user-facing success/error feedback
+- unit coverage for auth, routing, shell, and order flows plus a Playwright happy-path e2e scaffold
