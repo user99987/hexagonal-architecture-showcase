@@ -221,3 +221,25 @@ database for repeated lookups of the same order:
   cycles at 999 - without this, an order number reused after the sequence wraps around could serve a stale,
   previously-cached order for up to the cache's TTL.
 
+## Testing depth
+
+Mutation testing now complements the existing JaCoCo line coverage checks. Line coverage can still report 100% even
+when tests only execute code without asserting behavior strongly enough; PIT mutates the production code and verifies
+that tests actually fail, which makes the signal much stronger for domain business logic.
+
+PIT is configured for the `domain` module through `etc/pitest/pitest.gradle`. Run it explicitly with:
+
+```bash
+./gradlew :domain:pitest
+```
+
+The report is generated under `domain/build/reports/pitest/`, and the currently achieved/enforced mutation threshold for
+the domain module is 100%.
+
+It is intentionally not wired into the default `build` / `check` lifecycle because mutation analysis is materially
+slower than regular unit tests and is better used as an explicit quality gate when changing the domain layer.
+
+The AMQP module also includes a lightweight producer-side contract test for the order message. Instead of introducing
+the full operational footprint of Spring Cloud Contract or Pact (stub artifacts, brokers or additional publishing
+infrastructure), the showcase verifies the real `Order -> OrderMessage -> Gson JSON` path directly and asserts the
+wire-level schema that a consumer depends on.

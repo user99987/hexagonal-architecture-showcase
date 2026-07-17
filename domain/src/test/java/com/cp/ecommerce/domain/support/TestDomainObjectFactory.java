@@ -1,0 +1,50 @@
+package com.cp.ecommerce.domain.support;
+
+import java.util.Date;
+
+import com.cp.ecommerce.domain.customer.Address;
+import com.cp.ecommerce.domain.customer.Contact;
+import com.cp.ecommerce.domain.customer.Customer;
+import com.cp.ecommerce.domain.order.Order;
+
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+/**
+ * Factory for valid domain test objects.
+ */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+public final class TestDomainObjectFactory {
+
+    public static final Date TEST_CREATED = new Date(1710000000000L);
+
+    public static final Long TEST_CUSTOMER_ID = 1001L;
+
+    public static final String TEST_ORDER_NUMBER = "ORD-1001";
+
+    public static Order validOrder() {
+
+        return Order.builder()
+                .remarks("remark")
+                .orderNumber(TEST_ORDER_NUMBER)
+                .created(TEST_CREATED)
+                .customer(validCustomer())
+                .build();
+    }
+
+    public static Customer validCustomer() {
+
+        return Customer.builder().id(TEST_CUSTOMER_ID).contact(validContact()).address(validAddress()).build();
+    }
+
+    public static Contact validContact() {
+
+        return Contact.builder().fullName("John Doe").email("john.doe@test.com").phone("+48 123 456 789").build();
+    }
+
+    public static Address validAddress() {
+
+        return Address.builder().street("Main Street 1").postalCode("12-345").city("Warsaw").countryCode("PL").build();
+    }
+
+}
