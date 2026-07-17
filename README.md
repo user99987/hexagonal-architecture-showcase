@@ -205,3 +205,19 @@ Order persistence now uses a transactional outbox to avoid losing RabbitMQ event
 - `OutboxEventPublisher` polls pending rows on a schedule, reloads the full aggregate through `ManageOrderInPort.findOrder(...)`, publishes through `SendMessageInPort`, and marks the outbox row as `SENT` with a timestamp once publishing succeeds.
 - Message delivery still goes through the existing resilience4j-wrapped `SendOrderMessageAdapter`, so retry/circuit-breaker behavior is unchanged.
 - Properties: `outbox.publisher.enabled` (default `true`) and `outbox.publisher.poll-interval-ms` (default `5000`).
+
+## Caching
+
+The order read path (`GET /api/order/{orderNumber}`) is backed by a JCache/Ehcache cache to avoid hitting the
+database for repeated lookups of the same order:
+
+- `PersistenceCacheConfiguration` sets up an Ehcache-backed `javax.cache.CacheManager` (heap-based, 1 hour TTL,
+  100 max entries per `CacheProperties`), wrapped as a Spring `CacheManager` and enabled via `cache.enabled`
+  (default `true`; a `NoOpCacheManager` is used when disabled).
+- `OrderEntityRepository.getOrderEntityByOrderNumber` is `@Cacheable` under `orderCache`, so `FindOrderAdapter` ->
+  `ManageOrderUseCase.findOrder(...)` -> the `GET` endpoint reads from cache on repeated calls.
+- `OrderEntityRepository.save` is overridden with `@CachePut` (keyed by the saved entity's order number) to keep
+  the cache in sync on every save. This matters because `SEQ_ORDER_NUMBER` (see the Liquibase baseline changelog)
+  cycles at 999 - without this, an order number reused after the sequence wraps around could serve a stale,
+  previously-cached order for up to the cache's TTL.
+

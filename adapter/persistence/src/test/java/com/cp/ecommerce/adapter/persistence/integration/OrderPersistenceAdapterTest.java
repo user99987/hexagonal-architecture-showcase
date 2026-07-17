@@ -146,4 +146,32 @@ class OrderPersistenceAdapterTest {
         assertThat(pendingEvents).extracting(OutboxEventEntity::getOrderNumber).containsExactly(TEST_ORDER_NUMBER, "5678");
     }
 
+    @Test
+    @DirtiesContext
+    void shouldRefreshCacheOnSaveWhenOrderNumberIsReused() {
+
+        final OrderEntity original = OrderEntity.builder()
+                .remarks("original remark")
+                .orderNumber(TEST_ORDER_NUMBER)
+                .created(new Date())
+                .customer(CustomerEntityBuilder.mockContactEntity())
+                .build();
+        orderEntityRepository.save(original);
+        orderEntityRepository.getOrderEntityByOrderNumber(TEST_ORDER_NUMBER);
+
+        final OrderEntity reusedOrderNumber = OrderEntity.builder()
+                .remarks("updated remark after order number reuse")
+                .orderNumber(TEST_ORDER_NUMBER)
+                .created(new Date())
+                .customer(CustomerEntityBuilder.mockContactEntity())
+                .build();
+        orderEntityRepository.save(reusedOrderNumber);
+
+        final OrderEntity cachedOrder = cacheManager.getCache(ORDER_CACHE_NAME).get(TEST_ORDER_NUMBER, OrderEntity.class);
+        final OrderEntity result = orderEntityRepository.getOrderEntityByOrderNumber(TEST_ORDER_NUMBER);
+
+        assertThat(cachedOrder.getRemarks()).isEqualTo("updated remark after order number reuse");
+        assertThat(result.getRemarks()).isEqualTo("updated remark after order number reuse");
+    }
+
 }
