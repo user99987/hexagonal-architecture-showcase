@@ -2,7 +2,8 @@
 
 Project created to showcase use of wide range of tools, libraries, plugins and <ins>**_hexagonal architecture pattern_**<ins>.
 
-📐 See [docs/adr](docs/adr/README.md) for the architecture decision records behind the key design choices.
+📐 See [docs/architecture](docs/architecture/README.md) for C4-style context/container diagrams, and
+[docs/adr](docs/adr/README.md) for the architecture decision records behind the key design choices.
 
 ## Technological stack
 
