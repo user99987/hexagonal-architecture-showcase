@@ -40,6 +40,7 @@ Among many frameworks, libraries and tools, the most important being used are as
 - AWS SDK / LocalStack / Terraform
 - Kubernetes / Helm
 - Toxiproxy (chaos testing)
+- k6 (load testing)
 - GitHub Actions
 
 ### Plugins
@@ -203,6 +204,26 @@ SPRING_PROFILES_ACTIVE=docker docker compose up -d --force-recreate app
 Toxiproxy's HTTP API (`http://localhost:8474`) also supports `latency`, `bandwidth`, and `slow_close` toxics -
 useful for demonstrating the retry/backoff behavior (added latency) separately from the circuit breaker (hard
 failures), without touching any application code.
+
+## Load testing
+
+A [k6](https://k6.io/) script under [`etc/load-testing/order-api.js`](etc/load-testing/order-api.js) exercises the
+secured order API (`POST /api/order`, `GET /api/order/{orderNumber}`) end-to-end, including fetching a real JWT
+from Keycloak for each virtual user session:
+
+```bash
+# Main stack must be up first (docker compose up -d --build, or ./gradlew bootRun + etc/docker/*)
+k6 run etc/load-testing/order-api.js
+
+# Against different hosts/ports/credentials:
+k6 run -e BASE_URL=http://localhost:9080 -e KEYCLOAK_URL=http://localhost:8081 etc/load-testing/order-api.js
+```
+
+The default scenario ramps from 0 to 10 virtual users over 30s, holds for 2 minutes, then ramps back down, with
+thresholds on error rate and p95 latency for both endpoints. Run it side-by-side with the Grafana dashboard
+(`http://localhost:3000`) to watch request rate, latency, and JVM/HTTP metrics move in real time under load - or
+combine it with the [chaos testing](#chaos-testing-toxiproxy) Toxiproxy setup above to see the circuit breaker
+open under sustained load *and* a failing dependency at the same time.
 
 ## App containerization
 
