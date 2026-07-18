@@ -1,0 +1,34 @@
+# Architecture Decision Records
+
+This directory captures the significant architectural decisions made in this showcase, using the
+lightweight [ADR](https://adr.github.io/) format (Context / Decision / Consequences). ADRs are
+immutable once accepted — if a decision is later reversed, a new ADR supersedes the old one rather
+than editing it in place.
+
+| # | Title |
+|---|---|
+| [0001](0001-hexagonal-architecture.md) | Hexagonal (ports & adapters) architecture |
+| [0002](0002-transactional-outbox-over-2pc.md) | Transactional outbox instead of 2-phase commit |
+| [0003](0003-resilience4j-without-spring-boot-autoconfig.md) | Resilience4j wired manually, not via Spring Boot starter |
+| [0004](0004-jwt-oauth2-resource-server-with-keycloak.md) | JWT / OAuth2 Resource Server backed by Keycloak |
+| [0005](0005-aws-sdk-url-connection-http-client.md) | AWS SDK v2 uses the JDK URL-connection HTTP client |
+| [0006](0006-mutation-testing-with-pitest.md) | Mutation testing (Pitest) as a targeted quality gate |
+| [0007](0007-optional-cloud-integrations-as-opt-in-adapters.md) | Optional cloud/messaging integrations as opt-in adapters |
+
+## Template for new ADRs
+
+```markdown
+# NNNN. Title
+
+## Context
+
+What is the issue that we're seeing that is motivating this decision or change?
+
+## Decision
+
+What is the change that we're proposing and/or doing?
+
+## Consequences
+
+What becomes easier or more difficult to do because of this change?
+```
