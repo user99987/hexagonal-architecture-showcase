@@ -1,6 +1,6 @@
-# Hexagonal architecture showcase
+#  Showcase application
 
-Project created to showcase use of wide range of tools, libraries, plugins and <ins>**_hexagonal architecture pattern_**<ins>.
+Project created to showcase modern Java/Spring Boot/Angular stack, use of wide range of technologies and architectural patterns.
 
 📐 See [docs/architecture](docs/architecture/README.md) for C4-style context/container diagrams, and
 [docs/adr](docs/adr/README.md) for the architecture decision records behind the key design choices.
@@ -73,16 +73,58 @@ dir):
 
 ## Starting the application
 
-Execution of command `./gradlew clean build` will build the application and make it ready to start.
+**Prerequisites**: JDK 17+ (the Docker builder image uses JDK 21) and Docker Desktop (with `docker compose`).
 
-The application can be started using one of 4 pre-defined run configurations:
+Execution of command `./gradlew clean build` will build the application and make it ready to start. This also
+bundles the Angular frontend as static resources via the Gradle node plugin, so no separate `npm install`/`ng
+build` step is required.
 
-- h2 - in-memory database without RabbitMq connection
-- h2-amqp - in-memory database with RabbitMq connection
-- postgres - Postgres database without RabbitMq connection
-- postgres-amqp - Postgres database without RabbitMq connection
+Only run one option below at a time - both bind the same host ports (9080/9081, 5432, 5672, 8081, ...), so
+starting the second while the first is still up will fail with port conflicts.
 
-Docker images for Postgres server and RabbitMq instance can be found in */etc/docker* directory. `docker-compose up -d` command will pull images and start containers.
+### Option 1: Full containerized stack
+
+The root [`docker-compose.yml`](docker-compose.yml) builds the app image and starts the whole stack -
+Postgres, RabbitMQ, Keycloak and the observability stack (Prometheus/Tempo/Grafana) - on one Docker network:
+
+```
+docker compose up -d --build
+```
+
+Once healthy:
+
+- App: `http://localhost:9080/home` (Swagger UI at `/home/swagger-ui.html`), actuator at `http://localhost:9081/actuator`
+- Keycloak admin console: `http://localhost:8081`
+- Grafana: `http://localhost:3000` (admin/admin, anonymous access enabled)
+
+Verify it's up with `curl http://localhost:9081/actuator/health` (expects `{"status":"UP"}`), or just open the
+Swagger UI in a browser.
+
+Stop with `docker compose down`. Optional add-ons (AWS LocalStack, chaos/Toxiproxy) are opt-in via Compose
+profiles - see the [AWS LocalStack & Terraform](#aws-localstack--terraform) and
+[Chaos testing](#chaos-testing-toxiproxy) sections below.
+
+### Option 2: Run the app from an IDE, infra in Docker
+
+Start only the infra the app needs, then run/debug the Spring Boot app on the host using one of the 4
+pre-defined IntelliJ run configurations (under `.run/`):
+
+- `ECOMMERCE-h2` - in-memory H2 database, no RabbitMQ connection
+- `ECOMMERCE-h2-amqp` - in-memory H2 database with RabbitMQ connection
+- `ECOMMERCE-postgres` - Postgres database, no RabbitMQ connection
+- `ECOMMERCE-postgres-amqp` - Postgres database with RabbitMQ connection
+
+Standalone Compose files for each dependency live under `etc/docker/{postgres,rabbitmq,keycloak,observability}`
+and use `host.docker.internal` so containers can reach the app running on the host, e.g.:
+
+```
+docker compose -f etc/docker/postgres/docker-compose.yml up -d
+docker compose -f etc/docker/rabbitmq/docker-compose.yml up -d
+```
+
+Then start the app with the matching run configuration (or `./gradlew bootRun -Dspring.profiles.active=<profile>`,
+e.g. `postgres-amqp-local`). If you need Keycloak too (for the secured order endpoints), see the standalone
+Keycloak Compose file referenced in [Authentication & authorization](#authentication--authorization) below.
 
 ## Continuous Integration
 
@@ -141,7 +183,7 @@ and distributed traces via OpenTelemetry/OTLP, in addition to the usual health/i
   Spring profile, useful for log aggregation in containerized/production environments.
 
 A ready-to-use observability stack (Prometheus + Grafana + Tempo, with pre-provisioned datasources and an
-"Ecommerce Showcase - Overview" dashboard) is provided under `/etc/docker/observability`:
+"Showcase application - Overview" dashboard) is provided under `/etc/docker/observability`:
 
 ```
 docker compose -f etc/docker/observability/docker-compose.yml up -d

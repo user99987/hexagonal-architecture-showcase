@@ -18,7 +18,7 @@ class OpenApiConfigurationTest {
 
         final OpenAPI openApi = configuration.ecommerceOpenApi();
 
-        assertThat(openApi.getInfo().getTitle()).isEqualTo("Hexagonal architecture showcase - E-commerce API");
+        assertThat(openApi.getInfo().getTitle()).isEqualTo("Showcase application - E-commerce API");
         assertThat(openApi.getSecurity()).hasSize(1);
         assertThat(openApi.getComponents().getSecuritySchemes()).containsKey("bearerAuth");
     }

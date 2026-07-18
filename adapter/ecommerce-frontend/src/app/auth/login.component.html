@@ -11,7 +11,7 @@
         autocomplete="username"
       />
       @if (usernameControl.invalid && usernameControl.touched) {
-        <span class="error">Username is required.</span>
+      <span class="error">Username is required.</span>
       }
     </div>
     <div class="field">
@@ -24,11 +24,11 @@
         autocomplete="current-password"
       />
       @if (passwordControl.invalid && passwordControl.touched) {
-        <span class="error">Password is required.</span>
+      <span class="error">Password is required.</span>
       }
     </div>
     @if (errorMessage()) {
-      <div class="error-message" role="alert">{{ errorMessage() }}</div>
+    <div class="error-message" role="alert">{{ errorMessage() }}</div>
     }
     <button
       type="submit"

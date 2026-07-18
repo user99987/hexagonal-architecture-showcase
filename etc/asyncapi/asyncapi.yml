@@ -1,7 +1,7 @@
-asyncapi: 3.1.0
+asyncapi: 3.0.0
 id: 'urn:com:cp:ecommerce:showcase'
 info:
-  title: Ecommerce Showcase - Async API
+  title: Showcase application - Async API
   version: '1.0.0'
   description: >
     Documents the asynchronous, event-driven side of the showcase (RabbitMQ order events and the

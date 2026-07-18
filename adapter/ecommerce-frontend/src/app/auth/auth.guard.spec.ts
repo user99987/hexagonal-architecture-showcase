@@ -18,7 +18,7 @@ describe('authGuard', () => {
           provide: Router,
           useValue: {
             createUrlTree: (commands: unknown[], extras?: unknown) =>
-              ({ commands, extras }) as unknown as UrlTree,
+              ({ commands, extras } as unknown as UrlTree),
             navigate: jasmine.createSpy('navigate'),
           },
         },
@@ -33,7 +33,7 @@ describe('authGuard', () => {
   it('returns true when user is authenticated', () => {
     setup(true);
     const result = TestBed.runInInjectionContext(() =>
-      authGuard({} as never, { url: '/order' } as never),
+      authGuard({} as never, { url: '/order' } as never)
     );
     expect(result).toBeTrue();
   });
@@ -41,7 +41,7 @@ describe('authGuard', () => {
   it('returns UrlTree redirecting to /login when not authenticated', () => {
     setup(false);
     const result = TestBed.runInInjectionContext(() =>
-      authGuard({} as never, { url: '/order' } as never),
+      authGuard({} as never, { url: '/order' } as never)
     ) as UrlTree;
     expect(result).toBeTruthy();
     expect((result as unknown as { commands: string[] }).commands).toEqual([
@@ -49,7 +49,7 @@ describe('authGuard', () => {
     ]);
     expect(
       (result as unknown as { extras: { queryParams: { returnUrl: string } } })
-        .extras.queryParams.returnUrl,
+        .extras.queryParams.returnUrl
     ).toBe('/order');
   });
 });

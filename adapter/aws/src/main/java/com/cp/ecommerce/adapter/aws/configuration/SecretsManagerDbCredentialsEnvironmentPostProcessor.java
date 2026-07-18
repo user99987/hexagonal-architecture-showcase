@@ -37,11 +37,6 @@ import software.amazon.awssdk.services.secretsmanager.model.GetSecretValueReques
  * post-processor chain - well after {@code ConfigDataEnvironmentPostProcessor} (which has order
  * {@code HIGHEST_PRECEDENCE + 10}) has loaded all profile-specific {@code application-{profile}.yml} files. That guarantees the
  * {@code aws.*} properties required to build the Secrets Manager client are already available.
- *
- * <p>
- * <strong>Logging note:</strong> {@code EnvironmentPostProcessor}s run before the main logging infrastructure is initialised,
- * so we use the JUL {@link Logger} directly here (Spring's {@code DeferredLog} could also be used, but the simpler JUL approach
- * is sufficient for a single startup message).
  */
 public class SecretsManagerDbCredentialsEnvironmentPostProcessor implements EnvironmentPostProcessor, Ordered {
 

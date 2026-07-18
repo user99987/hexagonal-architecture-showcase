@@ -25,10 +25,8 @@ public class OpenApiConfiguration {
 
         return new OpenAPI()
                 .info(
-                        new Info().title("Hexagonal architecture showcase - E-commerce API")
-                                .description(
-                                        "REST API showcasing a hexagonal architecture implementation for placing "
-                                                + "and retrieving orders.")
+                        new Info().title("Showcase application - E-commerce API")
+                                .description("REST API showcasing application for placing " + "and retrieving orders.")
                                 .version("v1")
                                 .contact(new Contact().name("Showcase maintainers"))
                                 .license(new License().name("MIT").url("https://opensource.org/licenses/MIT")))

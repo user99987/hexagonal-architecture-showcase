@@ -118,7 +118,7 @@ describe('LoginComponent', () => {
   it('on error: shows errorMessage', fakeAsync(() => {
     setup();
     loginSpy.and.returnValue(
-      throwError(() => new Error('Invalid username or password.')),
+      throwError(() => new Error('Invalid username or password.'))
     );
     component.loginForm.setValue({ username: 'admin', password: 'wrong' });
     component.onSubmit();
@@ -134,7 +134,7 @@ describe('LoginComponent', () => {
     setup();
     fixture.detectChanges();
     const button = fixture.nativeElement.querySelector(
-      '[data-testid="login-submit"]',
+      '[data-testid="login-submit"]'
     ) as HTMLButtonElement;
     expect(button.disabled).toBeTrue();
   });
@@ -146,7 +146,7 @@ describe('LoginComponent', () => {
     component.submitting.set(true);
     fixture.detectChanges();
     const button = fixture.nativeElement.querySelector(
-      '[data-testid="login-submit"]',
+      '[data-testid="login-submit"]'
     ) as HTMLButtonElement;
     expect(button.disabled).toBeTrue();
   }));

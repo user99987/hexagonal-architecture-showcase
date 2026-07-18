@@ -3,7 +3,7 @@
 # Prometheus scrapes the app's /actuator/prometheus endpoint on the management port (9081).
 # The app exports traces via OTLP/HTTP to Tempo on port 4318 (see application-security.yml).
 # Grafana (http://localhost:3000, admin/admin) comes pre-provisioned with both datasources
-# and a starter "Ecommerce Showcase - Overview" dashboard.
+# and a starter "Showcase application - Overview" dashboard.
 services:
   prometheus:
     image: prom/prometheus:v2.55.1

@@ -28,7 +28,7 @@ describe('authInterceptor', () => {
       providers: [
         provideHttpClient(
           withInterceptors([authInterceptor]),
-          withInterceptorsFromDi(),
+          withInterceptorsFromDi()
         ),
         provideHttpClientTesting(),
         {
@@ -53,7 +53,7 @@ describe('authInterceptor', () => {
     httpClient.get(apiUrl).subscribe();
     const req = httpTesting.expectOne(apiUrl);
     expect(req.request.headers.get('Authorization')).toBe(
-      'Bearer my-test-token',
+      'Bearer my-test-token'
     );
     req.flush({});
   });

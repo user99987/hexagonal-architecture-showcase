@@ -13,8 +13,8 @@ graph TB
     customer["Customer<br/>(browser)"]
     admin["Order admin/viewer<br/>(browser)"]
 
-    subgraph system["Ecommerce Showcase"]
-        app["Hexagonal Architecture Showcase<br/>Angular frontend + Spring Boot backend"]
+    subgraph system["Showcase application"]
+        app["Angular frontend + Spring Boot backend"]
     end
 
     keycloak["Keycloak<br/>(OAuth2/OIDC identity provider)"]

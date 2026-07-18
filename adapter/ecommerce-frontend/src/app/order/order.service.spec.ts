@@ -51,7 +51,7 @@ describe('OrderService', () => {
 
     //then
     const req = httpTestingController.expectOne(
-      `${environment.apiPrefix}/order`,
+      `${environment.apiPrefix}/order`
     );
     expect(req.request.method).toBe('POST');
 

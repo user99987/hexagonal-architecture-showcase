@@ -20,7 +20,7 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(
       withXhr(),
       withInterceptors([authInterceptor]),
-      withInterceptorsFromDi(),
+      withInterceptorsFromDi()
     ),
     Title,
     { provide: APP_BASE_HREF, useValue: '/home' },

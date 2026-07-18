@@ -108,7 +108,7 @@ describe('AuthService', () => {
         expect(service.username()).toBe('admin');
         expect(service.roles()).toContain('ORDER_WRITE');
         expect(sessionStorage.getItem('ecommerce_access_token')).toBe(
-          accessToken,
+          accessToken
         );
         done();
       },

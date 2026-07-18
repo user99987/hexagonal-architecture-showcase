@@ -28,7 +28,7 @@ describe('appConfig', () => {
 
   it('registers an error handler provider', () => {
     expect(() =>
-      TestBed.runInInjectionContext(() => inject(ErrorHandler)),
+      TestBed.runInInjectionContext(() => inject(ErrorHandler))
     ).not.toThrow();
   });
 });

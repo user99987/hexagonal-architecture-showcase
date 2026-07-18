@@ -4,10 +4,8 @@
 
 The showcase needed an architecture that keeps business rules (order placement, pricing, export,
 audit) independent of any specific delivery mechanism (REST vs. messaging) or infrastructure choice
-(Postgres vs. H2, RabbitMQ vs. AWS SQS, SMTP vs. no-op). We also wanted the domain layer to be
-testable without spinning up Spring, a database, or a broker, and to make it obvious - both to
-contributors and to interviewers reviewing the repo - where business logic lives versus where
-technical integration details live.
+(Postgres vs. H2, RabbitMQ vs. AWS SQS, SMTP vs. no-op). I also wanted the domain layer to be
+testable without spinning up Spring, a database, or a broker.
 
 ## Decision
 

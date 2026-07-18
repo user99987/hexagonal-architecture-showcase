@@ -10,14 +10,12 @@
         data-testid="order-remarks"
         placeholder="Enter your order remarks…"
       ></textarea>
-      @if (remarksControl.invalid && remarksControl.touched) {
-        @if (remarksControl.errors?.['required']) {
-          <span class="error">Remarks are required.</span>
-        }
-        @if (remarksControl.errors?.['maxlength']) {
-          <span class="error">Remarks must be at most 800 characters.</span>
-        }
-      }
+      @if (remarksControl.invalid && remarksControl.touched) { @if
+      (remarksControl.errors?.['required']) {
+      <span class="error">Remarks are required.</span>
+      } @if (remarksControl.errors?.['maxlength']) {
+      <span class="error">Remarks must be at most 800 characters.</span>
+      } }
     </div>
     <button
       type="submit"
@@ -29,17 +27,13 @@
   </form>
 
   @if (submitting()) {
-    <p class="loading">Processing your order…</p>
-  }
-
-  @if (orderNumber()) {
-    <div class="success" role="status">
-      Order placed successfully! Order number:
-      <strong data-testid="order-number">{{ orderNumber() }}</strong>
-    </div>
-  }
-
-  @if (errorMessage()) {
-    <div class="error-message" role="alert">{{ errorMessage() }}</div>
+  <p class="loading">Processing your order…</p>
+  } @if (orderNumber()) {
+  <div class="success" role="status">
+    Order placed successfully! Order number:
+    <strong data-testid="order-number">{{ orderNumber() }}</strong>
+  </div>
+  } @if (errorMessage()) {
+  <div class="error-message" role="alert">{{ errorMessage() }}</div>
   }
 </div>

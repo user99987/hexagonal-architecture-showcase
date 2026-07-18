@@ -21,7 +21,7 @@ export class OrderService {
     return this.httpClient.post<OrderResponseModel>(
       `${environment.apiPrefix}/order`,
       body,
-      this.httpOptions,
+      this.httpOptions
     );
   }
 }

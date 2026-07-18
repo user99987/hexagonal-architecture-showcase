@@ -1,7 +1,7 @@
 apiVersion: v2
 name: ecommerce
 description: >-
-  Hexagonal architecture showcase - Spring Boot backend + built-in Angular frontend, packaged
+  Showcase application - Spring Boot backend + built-in Angular frontend, packaged
   as a single container image. Deploys the application Deployment/Service/Ingress; Postgres,
   RabbitMQ and Keycloak are expected to be reachable (in-cluster or external) - see values.yaml
   and the chart README for how to point at them.

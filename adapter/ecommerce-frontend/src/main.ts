@@ -14,4 +14,7 @@ const zoneConfig: ApplicationConfig = {
   providers: [provideZoneChangeDetection()],
 };
 
-bootstrapApplication(AppComponent, mergeApplicationConfig(appConfig, zoneConfig)).catch((err) => console.error(err));
+bootstrapApplication(
+  AppComponent,
+  mergeApplicationConfig(appConfig, zoneConfig)
+).catch((err) => console.error(err));

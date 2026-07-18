@@ -73,7 +73,7 @@ describe('OrderComponent', () => {
     expect(component.orderNumber()).toBe('ORD-001');
     const compiled = fixture.nativeElement as HTMLElement;
     const orderNumberEl = compiled.querySelector(
-      '[data-testid="order-number"]',
+      '[data-testid="order-number"]'
     );
     expect(orderNumberEl?.textContent).toContain('ORD-001');
   }));
@@ -94,19 +94,19 @@ describe('OrderComponent', () => {
   it('on HTTP error: shows "Failed to place order." message', fakeAsync(() => {
     setup();
     placeOrderSpy.and.returnValue(
-      throwError(() => new HttpErrorResponse({ status: 500 })),
+      throwError(() => new HttpErrorResponse({ status: 500 }))
     );
     component.orderForm.setValue({ remarks: 'test' });
     component.placeOrder();
     tick();
     fixture.detectChanges();
     expect(component.errorMessage()).toBe(
-      'Failed to place order. Please try again.',
+      'Failed to place order. Please try again.'
     );
     const compiled = fixture.nativeElement as HTMLElement;
     const alert = compiled.querySelector('[role="alert"]');
     expect(alert?.textContent).toContain(
-      'Failed to place order. Please try again.',
+      'Failed to place order. Please try again.'
     );
   }));
 
@@ -126,7 +126,7 @@ describe('OrderComponent', () => {
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.error')?.textContent).toContain(
-      'Remarks are required.',
+      'Remarks are required.'
     );
   });
 
@@ -137,7 +137,7 @@ describe('OrderComponent', () => {
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('.error')?.textContent).toContain(
-      'Remarks must be at most 800 characters.',
+      'Remarks must be at most 800 characters.'
     );
   });
 });

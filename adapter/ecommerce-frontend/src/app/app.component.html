@@ -1,10 +1,10 @@
 @if (authService.isAuthenticated()) {
-  <header>
-    <nav>
-      <span>Welcome, {{ authService.username() }}</span>
-      <button type="button" (click)="logout()">Logout</button>
-    </nav>
-  </header>
+<header>
+  <nav>
+    <span>Welcome, {{ authService.username() }}</span>
+    <button type="button" (click)="logout()">Logout</button>
+  </nav>
+</header>
 }
 <main>
   <router-outlet />
