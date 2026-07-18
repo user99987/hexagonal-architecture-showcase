@@ -1,0 +1,145 @@
+asyncapi: 3.1.0
+id: 'urn:com:cp:ecommerce:showcase'
+info:
+  title: Ecommerce Showcase - Async API
+  version: '1.0.0'
+  description: >
+    Documents the asynchronous, event-driven side of the showcase (RabbitMQ order events and the
+    optional AWS SQS order-audit side-channel), mirroring what springdoc-openapi does for the
+    synchronous REST API. Both messages originate from the same transactional outbox
+    (`OutboxEventPublisher`) once an order has been persisted - see
+    [docs/adr/0002](../../docs/adr/0002-transactional-outbox-over-2pc.md).
+  license:
+    name: Unlicense
+
+defaultContentType: application/json
+
+servers:
+  rabbitmq-local:
+    host: localhost:5672
+    protocol: amqp
+    description: Local RabbitMQ instance (see etc/docker/rabbitmq or docker-compose.yml).
+  sqs-localstack:
+    host: localhost:4566
+    protocol: sqs
+    description: >
+      LocalStack-emulated AWS SQS, provisioned by Terraform (etc/terraform). Only active when the
+      `aws-localstack` Spring profile and `service.aws.sqs.enabled=true` are set - see
+      docs/adr/0007.
+
+channels:
+  order-topic:
+    address: com.cp.e.topic.order
+    description: >
+      Topic exchange `com.cp.e.topic.order`, routing key `order.v1`, bound to the durable queue
+      `com.cp.q.order.v1` (see `MessagingConfiguration` in adapter:amqp).
+    servers:
+      - $ref: '#/servers/rabbitmq-local'
+    messages:
+      orderPlaced:
+        $ref: '#/components/messages/OrderPlacedMessage'
+
+  order-audit-queue:
+    address: ecommerce-order-audit
+    description: >
+      SQS queue provisioned by Terraform (`aws_sqs_queue.order_audit`), receiving a lightweight
+      audit event per successfully-processed order. Best-effort: publish failures never block the
+      order's outbox event from being marked SENT.
+    servers:
+      - $ref: '#/servers/sqs-localstack'
+    messages:
+      orderAudit:
+        $ref: '#/components/messages/OrderAuditMessage'
+
+operations:
+  publishOrderPlaced:
+    action: send
+    channel:
+      $ref: '#/channels/order-topic'
+    summary: >
+      Published by SendOrderMessageAdapter once OutboxEventPublisher has reloaded the persisted
+      order aggregate.
+    messages:
+      - $ref: '#/channels/order-topic/messages/orderPlaced'
+
+  consumeOrderPlaced:
+    action: receive
+    channel:
+      $ref: '#/channels/order-topic'
+    summary: Consumed by MessageListener (adapter:amqp) - a demonstration in-process listener.
+    messages:
+      - $ref: '#/channels/order-topic/messages/orderPlaced'
+
+  publishOrderAudit:
+    action: send
+    channel:
+      $ref: '#/channels/order-audit-queue'
+    summary: Published by PublishOrderAuditEventAdapter (adapter:aws), when enabled.
+    messages:
+      - $ref: '#/channels/order-audit-queue/messages/orderAudit'
+
+components:
+  messages:
+    OrderPlacedMessage:
+      name: OrderPlacedMessage
+      title: Order placed
+      summary: Notifies downstream consumers that an order has been placed.
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/OrderMessage'
+
+    OrderAuditMessage:
+      name: OrderAuditMessage
+      title: Order audit event
+      summary: Lightweight, denormalized audit trail entry for an order lifecycle event.
+      contentType: application/json
+      payload:
+        $ref: '#/components/schemas/OrderAuditEvent'
+
+  schemas:
+    OrderMessage:
+      type: object
+      description: Wire schema for the RabbitMQ order message (domain.OrderMessage, via Gson).
+      properties:
+        schemaVersion:
+          type: string
+          description: Schema version of this message payload, for forward-compatible evolution.
+          example: '1.0'
+        created:
+          type: string
+          format: date-time
+          description: Timestamp the order was placed.
+        customerId:
+          type: integer
+          format: int64
+        orderNumber:
+          type: string
+          description: Business-facing order identifier (also the primary export/audit key).
+      required:
+        - schemaVersion
+        - created
+        - customerId
+        - orderNumber
+
+    OrderAuditEvent:
+      type: object
+      description: Wire schema for the SQS order-audit message (adapter.aws.order.dto.OrderAuditEvent).
+      properties:
+        orderNumber:
+          type: string
+        customerId:
+          type: integer
+          format: int64
+        eventType:
+          type: string
+          enum:
+            - ORDER_PLACED
+        timestamp:
+          type: string
+          format: date-time
+          description: ISO-8601 timestamp string, e.g. 2024-01-01T00:00:00Z.
+      required:
+        - orderNumber
+        - customerId
+        - eventType
+        - timestamp

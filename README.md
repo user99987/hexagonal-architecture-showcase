@@ -97,6 +97,12 @@ application is running:
 
 Both are publicly accessible (no authentication required) so the API can be explored immediately.
 
+The asynchronous side of the API (RabbitMQ order events, and the optional AWS SQS order-audit
+event) is documented separately with an [AsyncAPI](https://www.asyncapi.com/) spec:
+[`etc/asyncapi/asyncapi.yml`](etc/asyncapi/asyncapi.yml). View it rendered with the
+[AsyncAPI Studio](https://studio.asyncapi.com/) (paste the file contents in), or validate it
+locally with `npx @asyncapi/cli validate etc/asyncapi/asyncapi.yml`.
+
 ## Authentication & authorization
 
 The order API (`/api/order/**`) is secured with Spring Security's OAuth2 Resource Server support, validating
