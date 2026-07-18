@@ -39,6 +39,7 @@ Among many frameworks, libraries and tools, the most important being used are as
 - Playwright
 - AWS SDK / LocalStack / Terraform
 - Kubernetes / Helm
+- Toxiproxy (chaos testing)
 - GitHub Actions
 
 ### Plugins
@@ -165,6 +166,43 @@ Resilience4j's Spring Boot autoconfiguration starter is intentionally *not* used
 plain Java beans instead. When a `MeterRegistry` is present (i.e. the full application, not isolated module tests),
 circuit breaker/retry metrics are automatically bound to Micrometer and show up alongside the other Prometheus
 metrics described above.
+
+### Chaos testing (Toxiproxy)
+
+To actually *see* the circuit breaker open under fault conditions rather than just reading its configuration, a
+[Toxiproxy](https://github.com/Shopify/toxiproxy) instance can be dropped in front of RabbitMQ (opt-in, `chaos`
+Docker Compose profile):
+
+```bash
+# 1. Main stack must already be up (docker compose up -d --build)
+# 2. Start Toxiproxy
+docker compose --profile chaos up -d toxiproxy
+
+# 3. Recreate the app so it routes RabbitMQ traffic through the proxy
+SPRING_PROFILES_ACTIVE=docker,chaos docker compose up -d --force-recreate app
+
+# 4. Inject a timeout toxic on the RabbitMQ proxy (drops the connection after 1ms both ways)
+curl -s -X POST http://localhost:8474/proxies/rabbitmq/toxics \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"rabbitmq-down","type":"timeout","stream":"downstream","attributes":{"timeout":1}}'
+
+# 5. Place several orders in a row (POST /api/order) - watch the app logs: retries kick in, then
+#    after enough failures the circuit breaker opens (further sends fail fast without attempting
+#    a connection). Circuit breaker state/metrics are visible at
+#    http://localhost:9081/actuator/prometheus (search for "resilience4j_circuitbreaker_state"),
+#    or as a panel in the Grafana dashboard.
+
+# 6. Remove the toxic to let the circuit breaker close again (half-open trial calls succeed)
+curl -s -X DELETE http://localhost:8474/proxies/rabbitmq/toxics/rabbitmq-down
+
+# 7. Tear down
+docker compose --profile chaos stop toxiproxy
+SPRING_PROFILES_ACTIVE=docker docker compose up -d --force-recreate app
+```
+
+Toxiproxy's HTTP API (`http://localhost:8474`) also supports `latency`, `bandwidth`, and `slow_close` toxics -
+useful for demonstrating the retry/backoff behavior (added latency) separately from the circuit breaker (hard
+failures), without touching any application code.
 
 ## App containerization
 

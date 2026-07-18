@@ -20,7 +20,7 @@ services:
     container_name: ecommerce-app
     restart: unless-stopped
     environment:
-      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE:-docker}
     ports:
       - "9080:9080"
       - "9081:9081"
@@ -165,3 +165,25 @@ services:
       - AWS_SECRET_ACCESS_KEY=test
       - AWS_DEFAULT_REGION=us-east-1
     entrypoint: ["sh", "-c", "terraform init && terraform apply -auto-approve"]
+
+  # ---- Chaos testing (opt-in: docker compose --profile chaos up -d toxiproxy) ----
+  #
+  # Toxiproxy sits in front of RabbitMQ so latency/timeouts/connection resets can be injected on
+  # demand via its HTTP control API (http://localhost:8474), to demonstrate the Resilience4j
+  # circuit breaker around SendOrderMessageAdapter opening under fault conditions. See the "Chaos
+  # testing" section of the README for the full walkthrough.
+  #
+  # The app must be recreated with the extra "chaos" profile to route through the proxy:
+  #   SPRING_PROFILES_ACTIVE=docker,chaos docker compose up -d --force-recreate app
+  toxiproxy:
+    image: ghcr.io/shopify/toxiproxy:2.9.0
+    container_name: ecommerce-toxiproxy
+    profiles: ["chaos"]
+    command: ["-host=0.0.0.0", "-config=/etc/toxiproxy.json"]
+    volumes:
+      - ./etc/docker/chaos/toxiproxy.json:/etc/toxiproxy.json:ro
+    ports:
+      - "8474:8474"
+      - "25672:25672"
+    depends_on:
+      - rabbitmq
