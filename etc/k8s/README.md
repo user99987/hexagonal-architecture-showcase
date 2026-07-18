@@ -1,0 +1,72 @@
+# Kubernetes deployment (Helm chart)
+
+Deploys the containerized application (same image built by the root `Dockerfile`) to Kubernetes,
+complementing the Docker Compose setup at the repo root (which remains the quickest way to run the
+full stack on a single machine). This is aimed at a local cluster (`kind`/`k3d`/`minikube`) to
+demonstrate a Helm-based deployment; it is not tuned for a production cluster.
+
+## What's here
+
+- `helm/ecommerce/` - the Helm chart for the application itself (Deployment, Service, Ingress,
+  HorizontalPodAutoscaler, ServiceAccount, Secret). See `values.yaml` for all configurable options.
+- `dev-dependencies.yaml` - minimal, dev-only plain Kubernetes manifests for Postgres, RabbitMQ and
+  Keycloak (matching the credentials used by the root `docker-compose.yml`), so the chart has
+  something to talk to in a throwaway cluster. **Not for production** - no persistent volumes, no
+  resource limits, a single replica each, plaintext credentials.
+
+The observability stack (Prometheus/Tempo/Grafana) is not duplicated here; use
+`etc/docker/observability/docker-compose.yml` alongside a port-forwarded app, or extend
+`dev-dependencies.yaml` similarly if you want it fully in-cluster too.
+
+## Quick start (kind)
+
+```bash
+# 1. Create a local cluster (skip if you already have one)
+kind create cluster --name ecommerce-showcase
+
+# 2. Build the application image and load it into the cluster
+docker build -t ecommerce-showcase:local .
+kind load docker-image ecommerce-showcase:local --name ecommerce-showcase
+
+# 3. Deploy Postgres/RabbitMQ/Keycloak (dev-only, see caveats above)
+kubectl create configmap ecommerce-keycloak-realm \
+  --from-file=realm-export.json=etc/docker/keycloak/realm-export.json
+kubectl apply -f etc/k8s/dev-dependencies.yaml
+kubectl wait --for=condition=available deployment/ecommerce-postgres deployment/ecommerce-rabbitmq deployment/ecommerce-keycloak --timeout=180s
+
+# 4. Deploy the application with Helm
+helm install ecommerce etc/k8s/helm/ecommerce
+
+# 5. Follow the printed NOTES, e.g.:
+kubectl rollout status deployment/ecommerce
+kubectl port-forward svc/ecommerce 9080:9080 9081:9081
+```
+
+Then open `http://localhost:9080/home` (Swagger UI at `/home/swagger-ui/index.html`) and
+`http://localhost:9081/actuator/health`.
+
+## Configuration
+
+All connection details (Postgres, RabbitMQ, Keycloak issuer/JWK-set URIs, OTLP tracing endpoint)
+are plain `values.yaml` entries, consumed by a dedicated `k8s` Spring profile
+(`application/ecommerce/src/main/resources/application-k8s.yml`) via environment variables - see
+that file for the full list and defaults. Point them at externally-hosted services instead of the
+in-cluster dev dependencies by overriding the relevant `env.*` values, e.g.:
+
+```bash
+helm install ecommerce etc/k8s/helm/ecommerce \
+  --set env.dbHost=my-managed-postgres.example.com \
+  --set env.oauth2JwkSetUri=https://auth.example.com/realms/ecommerce/protocol/openid-connect/certs
+```
+
+For anything beyond local experimentation, move `env.dbPassword`/`env.rabbitmqPassword` out of
+`values.yaml` into a pre-created Kubernetes Secret and reference it via `extraEnv`, rather than
+plain-text Helm values.
+
+## Uninstalling
+
+```bash
+helm uninstall ecommerce
+kubectl delete -f etc/k8s/dev-dependencies.yaml
+kind delete cluster --name ecommerce-showcase
+```

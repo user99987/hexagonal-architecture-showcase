@@ -1,0 +1,21 @@
+The {{ .Chart.Name }} chart has been deployed as release "{{ .Release.Name }}" in namespace
+"{{ .Release.Namespace }}".
+
+1. Check rollout status:
+
+   kubectl rollout status deployment/{{ include "ecommerce.fullname" . }} -n {{ .Release.Namespace }}
+
+2. Access the application:
+
+{{- if .Values.ingress.enabled }}
+   http://{{ .Values.ingress.host }}
+{{- else }}
+   kubectl port-forward svc/{{ include "ecommerce.fullname" . }} -n {{ .Release.Namespace }} 9080:{{ .Values.service.appPort }} 9081:{{ .Values.service.managementPort }}
+   Then open http://localhost:9080/home (Swagger UI at /home/swagger-ui/index.html) and
+   http://localhost:9081/actuator/health.
+{{- end }}
+
+3. This chart only deploys the application itself. Postgres ({{ .Values.env.dbHost }}), RabbitMQ
+   ({{ .Values.env.rabbitmqHost }}) and Keycloak (referenced by OAUTH2_JWK_SET_URI) must already be
+   reachable at the hostnames configured in values.yaml - see etc/k8s/helm/README.md for options
+   (in-cluster manifests, Bitnami charts, or an external managed instance).

@@ -1,0 +1,35 @@
+# Profile for running the app inside Kubernetes (see etc/k8s/helm chart). Connection details for
+# Postgres/RabbitMQ/Keycloak/Tempo default to in-cluster Kubernetes Service DNS names matching the
+# Helm chart's defaults, but are overridable via environment variables so the same image works
+# against externally-hosted dependencies too (e.g. a managed Postgres instance).
+spring:
+  config:
+    import:
+      classpath:application.yml,classpath:application-persistence-postgres.yml,classpath:application-amqp.yml
+  datasource:
+    url: "jdbc:postgresql://${DB_HOST:ecommerce-postgres}:${DB_PORT:5432}/${DB_NAME:test_db}"
+    username: ${DB_USERNAME:sa}
+    password: ${DB_PASSWORD:sa}
+  rabbitmq:
+    host: ${RABBITMQ_HOST:ecommerce-rabbitmq}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:sa}
+    password: ${RABBITMQ_PASSWORD:sa}
+  liquibase:
+    contexts: local
+
+service:
+  mail:
+    enabled: false
+
+security:
+  oauth2:
+    # Browser-facing issuer (must match the "iss" claim of tokens); override via env var if
+    # Keycloak is reachable at a different externally-facing host/port (e.g. an Ingress host).
+    issuer-uri: ${OAUTH2_ISSUER_URI:http://localhost:8081/realms/ecommerce}
+    # Server-to-server JWK set fetch, defaults to the in-cluster Keycloak Service DNS name.
+    jwk-set-uri: ${OAUTH2_JWK_SET_URI:http://ecommerce-keycloak:8080/realms/ecommerce/protocol/openid-connect/certs}
+
+observability:
+  otlp:
+    tracing-endpoint: ${OTLP_TRACING_ENDPOINT:http://ecommerce-tempo:4318/v1/traces}

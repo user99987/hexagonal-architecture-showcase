@@ -38,6 +38,7 @@ Among many frameworks, libraries and tools, the most important being used are as
 - Pitest (mutation testing)
 - Playwright
 - AWS SDK / LocalStack / Terraform
+- Kubernetes / Helm
 - GitHub Actions
 
 ### Plugins
@@ -320,3 +321,22 @@ docker exec ecommerce-localstack awslocal secretsmanager get-secret-value \
 ```
 
 For full Terraform details see [`etc/terraform/README.md`](etc/terraform/README.md).
+
+## Kubernetes deployment (Helm)
+
+The containerized application can also be deployed to Kubernetes via a Helm chart under
+`etc/k8s/helm/ecommerce`, complementing the Docker Compose setup above. It reuses the same image
+built by the root `Dockerfile` and a dedicated `k8s` Spring profile
+(`application-k8s.yml`) that resolves Postgres/RabbitMQ/Keycloak/Tempo connection details from
+environment variables, defaulting to in-cluster Service DNS names.
+
+```bash
+kind create cluster --name ecommerce-showcase
+docker build -t ecommerce-showcase:local .
+kind load docker-image ecommerce-showcase:local --name ecommerce-showcase
+kubectl apply -f etc/k8s/dev-dependencies.yaml   # dev-only Postgres/RabbitMQ/Keycloak
+helm install ecommerce etc/k8s/helm/ecommerce
+```
+
+See [`etc/k8s/README.md`](etc/k8s/README.md) for the full walkthrough, configuration options, and
+how to point the chart at externally-hosted dependencies instead.
