@@ -15,9 +15,20 @@ dependencies {
     implementation 'com.google.code.gson:gson'
     implementation 'org.projectlombok:lombok'
     implementation 'org.springframework.boot:spring-boot-autoconfigure'
-    implementation 'software.amazon.awssdk:s3'
-    implementation 'software.amazon.awssdk:sqs'
-    implementation 'software.amazon.awssdk:secretsmanager'
+    // Exclude the default Apache HttpClient5 sync client: it leaks org.apache.httpcomponents.client5 onto the
+    // classpath of every module depending on adapter:aws, which changes Spring Boot's auto-selected
+    // ClientHttpRequestFactory for unrelated RestTemplate beans elsewhere in the app. The lightweight JDK
+    // URLConnection client below is used explicitly instead (see AwsClientConfiguration).
+    implementation('software.amazon.awssdk:s3') {
+        exclude group: 'software.amazon.awssdk', module: 'apache5-client'
+    }
+    implementation('software.amazon.awssdk:sqs') {
+        exclude group: 'software.amazon.awssdk', module: 'apache5-client'
+    }
+    implementation('software.amazon.awssdk:secretsmanager') {
+        exclude group: 'software.amazon.awssdk', module: 'apache5-client'
+    }
+    implementation 'software.amazon.awssdk:url-connection-client'
     testImplementation project(path: ':adapter:common', configuration: 'testArtifacts')
 }
 

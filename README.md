@@ -30,6 +30,11 @@ Among many frameworks, libraries and tools, the most important being used are as
 - Freemarker
 - OpenAPI (Swagger UI)
 - Micrometer / Prometheus / OpenTelemetry
+- Keycloak (OAuth2/JWT)
+- Resilience4j
+- Pitest (mutation testing)
+- Playwright
+- AWS SDK / LocalStack / Terraform
 - GitHub Actions
 
 ### Plugins
@@ -56,6 +61,9 @@ dir):
    client app.
 9. [Gradle Versions Plugin](https://github.com/ben-manes/gradle-versions-plugin) – this plugin provides a
     task to determine which dependencies have updates. Additionally, the plugin checks for updates to Gradle itself.
+10. [Pitest](https://pitest.org/) – mutation testing for the
+    `domain` module, configured in `etc/pitest/pitest.gradle`. Not part of the default build/check lifecycle; run
+    explicitly with `./gradlew :domain:pitest` (see [Testing depth](#testing-depth)).
 
 ## Starting the application
 
@@ -269,29 +277,9 @@ showcase, using [LocalStack](https://localstack.cloud/) as a local AWS emulator 
 | SQS queue | `ecommerce-order-audit` | Publishes a lightweight audit event per order (`PublishOrderAuditEventAdapter`) |
 | Secrets Manager secret | `ecommerce/db-credentials` | Provides Postgres username/password at startup (`SecretsManagerDbCredentialsEnvironmentPostProcessor`) |
 
-### Hexagonal architecture fit
+### Local configuration
 
-All three integrations follow the same **opt-in toggle pattern** already used by RabbitMQ:
-
-| Layer | New element |
-|---|---|
-| Domain outgoing port | `StoreOrderExportOutPort` / `PublishOrderAuditEventOutPort` |
-| Domain incoming port | `ExportOrderInPort` / `PublishOrderAuditEventInPort` |
-| Domain use case | `ExportOrderUseCase` / `PublishOrderAuditEventUseCase` |
-| Active adapter (`enabled=true`) | `StoreOrderExportAdapter` (S3) / `PublishOrderAuditEventAdapter` (SQS) |
-| No-op adapter (`enabled=false` / default) | `DoNotStoreOrderExportAdapter` / `DoNotPublishOrderAuditEventAdapter` |
-
-The S3/SQS adapters are wired as **best-effort side-channels** inside `OutboxEventPublisher`:
-they run after the primary RabbitMQ send and their failures never prevent the outbox event
-from being marked `SENT`.  The Secrets Manager integration is a standalone
-`EnvironmentPostProcessor` that injects DB credentials early in the Spring startup lifecycle.
-
-All three are **off by default** (`matchIfMissing = true` on the no-op adapters).  No existing
-test, profile, or build step is affected unless the `aws-localstack` profile is active.
-
-### Step-by-step: try it locally
-
-**Prerequisites**: Docker Desktop running, `docker compose` v2, the main app stack up (Postgres + RabbitMQ).
+**Prerequisites**: Docker Desktop running, `docker compose`, the main app stack up (Postgres + RabbitMQ).
 
 ```bash
 # 1. Start the existing infra stack (Postgres + RabbitMQ + Keycloak)

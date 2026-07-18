@@ -9,6 +9,7 @@ import org.springframework.context.annotation.Configuration;
 import lombok.RequiredArgsConstructor;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
 import software.amazon.awssdk.auth.credentials.StaticCredentialsProvider;
+import software.amazon.awssdk.http.urlconnection.UrlConnectionHttpClient;
 import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.secretsmanager.SecretsManagerClient;
@@ -35,6 +36,7 @@ public class AwsClientConfiguration {
                 .endpointOverride(URI.create(awsProperties.getEndpointOverride()))
                 .region(Region.of(awsProperties.getRegion()))
                 .credentialsProvider(staticCredentials())
+                .httpClient(UrlConnectionHttpClient.create())
                 .forcePathStyle(true)
                 .build();
     }
@@ -50,6 +52,7 @@ public class AwsClientConfiguration {
                 .endpointOverride(URI.create(awsProperties.getEndpointOverride()))
                 .region(Region.of(awsProperties.getRegion()))
                 .credentialsProvider(staticCredentials())
+                .httpClient(UrlConnectionHttpClient.create())
                 .build();
     }
 
@@ -64,6 +67,7 @@ public class AwsClientConfiguration {
                 .endpointOverride(URI.create(awsProperties.getEndpointOverride()))
                 .region(Region.of(awsProperties.getRegion()))
                 .credentialsProvider(staticCredentials())
+                .httpClient(UrlConnectionHttpClient.create())
                 .build();
     }
 
